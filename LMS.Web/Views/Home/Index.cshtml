@@ -1,0 +1,42 @@
+﻿@model IEnumerable<LMS.Core.Models.Course>
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome to LMS</h1>
+    <p>Learn from the best courses online.</p>
+</div>
+
+<div class="row">
+    <h2>Featured Courses</h2>
+    @if (Model.Any())
+    {
+        @foreach (var course in Model.Take(6))
+        {
+            <div class="col-md-4 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">@course.Title</h5>
+                        <p class="card-text">@course.Description</p>
+                        <span class="badge bg-primary">@course.Level</span>
+                        @if (course.Price.HasValue)
+                        {
+                            <span class="badge bg-success">$@course.Price</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-info">Free</span>
+                        }
+                        <br />
+                        <a href="#" class="btn btn-primary mt-2">View Course</a>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <p>No courses available yet.</p>
+    }
+</div>
