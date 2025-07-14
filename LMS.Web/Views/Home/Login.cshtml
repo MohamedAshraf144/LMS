@@ -1,0 +1,186 @@
+﻿@model LMS.Application.DTOs.LoginDto
+@{
+    ViewData["Title"] = "Log in";
+}
+
+<div class="auth-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <i class="fas fa-user fa-3x mb-3"></i>
+                        <h2 class="fw-bold mb-2">أهلاً بعودتك!</h2>
+                        <p class="mb-0 opacity-75">سجل دخولك لمتابعة رحلة التعلم</p>
+                    </div>
+                    <div class="auth-body">
+                        <form asp-action="Login" method="post" id="loginForm">
+                            <div asp-validation-summary="All" class="alert alert-danger d-none"></div>
+
+                            <div class="mb-4">
+                                <label asp-for="Email" class="form-label fw-semibold">
+                                    <i class="fas fa-envelope text-primary me-2"></i>البريد الإلكتروني
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-envelope"></i>
+                                    </span>
+                                    <input asp-for="Email" type="email" class="form-control"
+                                           placeholder="أدخل بريدك الإلكتروني" autocomplete="email" required>
+                                </div>
+                                <span asp-validation-for="Email" class="text-danger small"></span>
+                            </div>
+
+                            <div class="mb-4">
+                                <label asp-for="Password" class="form-label fw-semibold">
+                                    <i class="fas fa-lock text-primary me-2"></i>كلمة المرور
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-lock"></i>
+                                    </span>
+                                    <input asp-for="Password" type="password" class="form-control"
+                                           placeholder="أدخل كلمة المرور" autocomplete="current-password" required>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword(this)">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <span asp-validation-for="Password" class="text-danger small"></span>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="rememberMe" name="rememberMe">
+                                    <label class="form-check-label" for="rememberMe">تذكرني</label>
+                                </div>
+                                <a href="@Url.Action("ForgotPassword", "Account")" class="text-primary text-decoration-none">
+                                    نسيت كلمة المرور؟
+                                </a>
+                            </div>
+
+                            <button type="submit" class="btn-primary-custom w-100 mb-4">
+                                <i class="fas fa-sign-in-alt me-2"></i>تسجيل الدخول
+                            </button>
+
+                            <div class="text-center">
+                                <p class="mb-0">
+                                    ليس لديك حساب؟
+                                    <a href="@Url.Action("Register", "Account")" class="text-primary fw-semibold text-decoration-none">
+                                        إنشاء حساب جديد
+                                    </a>
+                                </p>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Quick Login Demo -->
+                <div class="bg-light rounded-4 p-4 mt-4">
+                    <h6 class="fw-bold mb-3 text-center">تجربة سريعة</h6>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <button type="button" class="btn btn-outline-primary w-100 btn-sm"
+                                    onclick="quickLogin('admin@lms.com', 'admin123')">
+                                <i class="fas fa-user-shield me-1"></i>مدير
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button type="button" class="btn btn-outline-success w-100 btn-sm"
+                                    onclick="quickLogin('instructor@lms.com', 'instructor123')">
+                                <i class="fas fa-chalkboard-teacher me-1"></i>مدرب
+                            </button>
+                        </div>
+                    </div>
+                    <small class="text-muted d-block text-center mt-2">
+                        حسابات تجريبية للاختبار
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        // Toggle password visibility
+        function togglePassword(button) {
+            const input = button.parentElement.querySelector('input');
+            const icon = button.querySelector('i');
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // Quick login function
+        function quickLogin(email, password) {
+            document.getElementById('Email').value = email;
+            document.getElementById('Password').value = password;
+
+            Swal.fire({
+                title: 'تسجيل دخول تجريبي',
+                text: 'سيتم تسجيل الدخول باستخدام بيانات تجريبية',
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonText: 'متابعة',
+                cancelButtonText: 'إلغاء',
+                confirmButtonColor: '#6366f1'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('loginForm').submit();
+                }
+            });
+        }
+
+        // Form submission with loading state
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            showLoading(submitBtn, 'جاري تسجيل الدخول...');
+        });
+
+        // Focus management
+        document.addEventListener('DOMContentLoaded', function() {
+            const emailInput = document.getElementById('Email');
+            if (emailInput && !emailInput.value) {
+                emailInput.focus();
+            }
+        });
+
+        // Enter key navigation
+        document.getElementById('Email').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('Password').focus();
+            }
+        });
+
+        // Validation errors display
+        @if (!ViewData.ModelState.IsValid)
+        {
+                <text>
+                const errorAlert = document.querySelector('.alert-danger');
+                if (errorAlert) {
+                    errorAlert.classList.remove('d-none');
+                    errorAlert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                </text>
+        }
+
+        // Auto-hide validation errors on input
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', function() {
+                const validationSpan = this.parentElement.parentElement.querySelector('.text-danger');
+                if (validationSpan) {
+                    validationSpan.textContent = '';
+                }
+            });
+        });
+    </script>
+}

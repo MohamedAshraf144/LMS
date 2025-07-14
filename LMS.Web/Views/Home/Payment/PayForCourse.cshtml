@@ -1,0 +1,156 @@
+﻿<!-- LMS.Web/Views/Payment/PayForCourse.cshtml -->
+@model object
+@{
+    ViewData["Title"] = "PayForCourse";
+    var course = ViewBag.Course as LMS.Core.Models.Course;
+}
+
+<div class="auth-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="payment-card">
+                    <div class="payment-header">
+                        <i class="fas fa-credit-card fa-3x mb-3"></i>
+                        <h2 class="fw-bold mb-2">دفع ثمن الكورس</h2>
+                        <p class="mb-0 opacity-75">اتمم عملية الدفع للحصول على الوصول الكامل للكورس</p>
+                    </div>
+                    <div class="payment-body">
+                        @if (course != null)
+                        {
+                            <!-- Course Info -->
+                            <div class="payment-summary">
+                                <h5 class="fw-bold mb-3">
+                                    <i class="fas fa-shopping-cart me-2"></i>ملخص الطلب
+                                </h5>
+                                <div class="row align-items-center">
+                                    <div class="col-md-3">
+                                        @if (!string.IsNullOrEmpty(course.ImageUrl))
+                                        {
+                                            <img src="@course.ImageUrl" alt="@course.Title" class="img-fluid rounded-3">
+                                        }
+                                        else
+                                        {
+                                            <div class="bg-primary rounded-3 d-flex align-items-center justify-content-center" style="height: 100px;">
+                                                <i class="fas fa-book fa-2x text-white"></i>
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="col-md-9">
+                                        <h5 class="fw-bold mb-2">@course.Title</h5>
+                                        <p class="text-muted mb-3">@course.Description</p>
+                                        <div class="row g-3">
+                                            <div class="col-sm-4">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="fas fa-clock text-primary me-2"></i>
+                                                    <span class="small">@course.Duration ساعة</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-4">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="fas fa-signal text-primary me-2"></i>
+                                                    <span class="small">@course.Level.ToString()</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-4">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="fas fa-tags text-primary me-2"></i>
+                                                    <span class="small">@(course.Category?.Name ?? "عام")</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Pricing -->
+                                <hr class="my-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="fw-semibold">سعر الكورس:</span>
+                                    <span class="h4 fw-bold text-success mb-0">@course.Price?.ToString("F0") جنيه مصري</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="fw-semibold">الضرائب:</span>
+                                    <span class="text-muted">مشمولة</span>
+                                </div>
+                                <hr>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="h5 fw-bold">الإجمالي:</span>
+                                    <span class="h3 fw-bold text-primary">@course.Price?.ToString("F0") جنيه مصري</span>
+                                </div>
+                            </div>
+
+                            <!-- Payment Methods -->
+                            <div class="mb-4">
+                                <h5 class="fw-bold mb-3">
+                                    <i class="fas fa-payment-card me-2"></i>طريقة الدفع
+                                </h5>
+                                <div class="bg-light rounded-3 p-3">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-credit-card text-primary fs-4 me-3"></i>
+                                            <div>
+                                                <h6 class="mb-0 fw-bold">PayMob - دفع آمن</h6>
+                                                <small class="text-muted">فيزا، ماستركارد، محافظ إلكترونية</small>
+                                            </div>
+                                        </div>
+                                        <i class="fas fa-shield-alt text-success fs-4"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Security Info -->
+                            <div class="alert alert-info border-0">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-info-circle me-3"></i>
+                                    <div>
+                                        <strong>معلومات مهمة:</strong>
+                                        <ul class="mb-0 mt-2">
+                                            <li>سيتم تحويلك إلى بوابة الدفع الآمنة</li>
+                                            <li>ستحصل على الوصول الفوري للكورس بعد الدفع</li>
+                                            <li>ضمان استرداد الأموال خلال 30 يوم</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Payment Button -->
+                            <form asp-action="InitiatePayment" method="post">
+                                <input type="hidden" name="courseId" value="@course.Id" />
+                                <div class="d-grid gap-3">
+                                    <button type="submit" class="btn-primary-custom btn-lg">
+                                        <i class="fas fa-credit-card me-2"></i>
+                                        ادفع الآن - @course.Price?.ToString("F0") جنيه مصري
+                                    </button>
+                                    <a href="@Url.Action("Details", "Courses", new { id = course.Id })" 
+                                       class="btn btn-outline-secondary btn-lg">
+                                        <i class="fas fa-arrow-right me-2"></i>العودة للكورس
+                                    </a>
+                                </div>
+                            </form>
+
+                            <!-- Security Badges -->
+                            <div class="security-badges mt-4">
+                                <div class="security-badge">
+                                    <i class="fas fa-shield-alt text-success me-2"></i>دفع آمن 100%
+                                </div>
+                                <div class="security-badge">
+                                    <i class="fas fa-lock text-primary me-2"></i>مشفر بـ SSL
+                                </div>
+                                <div class="security-badge">
+                                    <i class="fas fa-undo text-warning me-2"></i>ضمان الاسترداد
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                حدث خطأ في تحميل بيانات الكورس. يرجى المحاولة مرة أخرى.
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -19,6 +19,7 @@ namespace LMS.Infrastructure.Data
         public DbSet<AssignmentSubmission> AssignmentSubmissions { get; set; }
         public DbSet<LessonProgress> LessonProgresses { get; set; }
         public DbSet<Review> Reviews { get; set; }
+        public DbSet<Payment> Payments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -166,6 +167,33 @@ namespace LMS.Infrastructure.Data
                     .WithMany(c => c.Reviews)
                     .HasForeignKey(e => e.CourseId)
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Payment Configuration
+            modelBuilder.Entity<Payment>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Amount).HasColumnType("decimal(18,2)");
+                entity.Property(e => e.Currency).IsRequired().HasMaxLength(3);
+                entity.Property(e => e.PayMobOrderId).HasMaxLength(100);
+                entity.Property(e => e.PayMobTransactionId).HasMaxLength(100);
+                entity.Property(e => e.PaymentToken).HasMaxLength(500);
+                entity.Property(e => e.Notes).HasMaxLength(1000);
+                entity.Property(e => e.FailureReason).HasMaxLength(500);
+
+                entity.HasOne(e => e.User)
+                    .WithMany() // Add navigation property to User if needed
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.Course)
+                    .WithMany() // Add navigation property to Course if needed
+                    .HasForeignKey(e => e.CourseId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasIndex(e => e.PayMobOrderId);
+                entity.HasIndex(e => e.PayMobTransactionId);
+                entity.HasIndex(e => new { e.UserId, e.CourseId });
             });
         }
     }

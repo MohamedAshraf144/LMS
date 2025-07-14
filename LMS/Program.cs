@@ -1,11 +1,12 @@
 // LMS.API/Program.cs (Updated with seed data)
-using Microsoft.EntityFrameworkCore;
+using LMS.Core.Models.PayMob;
+using LMS.Infrastructure.Data;
+using LMS.Shared.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
-using LMS.Infrastructure.Data;
-using LMS.Shared.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -90,6 +91,8 @@ builder.Services.AddCors(options =>
 });
 
 // ?? ??? pipeline
+builder.Services.Configure<PayMobConfiguration>(
+    builder.Configuration.GetSection("PayMob"));
 
 var app = builder.Build();
 

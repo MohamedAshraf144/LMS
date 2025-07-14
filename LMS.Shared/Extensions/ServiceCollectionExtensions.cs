@@ -11,15 +11,22 @@ namespace LMS.Shared.Extensions
     {
         public static IServiceCollection AddLMSServices(this IServiceCollection services)
         {
-            // Repositories
+            // Existing repositories...
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
-            // Services
+            // Existing services...
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<ICourseService, CourseService>();
             services.AddScoped<IEnrollmentService, EnrollmentService>();
             services.AddScoped<ILessonService, LessonService>();
             services.AddScoped<IAssignmentService, AssignmentService>();
+
+            // Add Payment services
+            services.AddScoped<IPaymentService, PaymentService>();
+            services.AddScoped<IPayMobService, PayMobService>();
+
+            // Add HttpClient for PayMob
+            services.AddHttpClient<IPayMobService, PayMobService>();
 
             return services;
         }

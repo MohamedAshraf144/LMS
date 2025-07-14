@@ -1,0 +1,107 @@
+﻿@{  
+    ViewData["Title"] = "Payment cancelled";  
+}  
+
+<div class="auth-container">  
+    <div class="container">  
+        <div class="row justify-content-center">  
+            <div class="col-md-6">  
+                <div class="card-modern text-center p-5">  
+                    <div class="mb-4">  
+                        <div class="bg-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-3"  
+                             style="width: 100px; height: 100px;">  
+                            <i class="fas fa-times text-white" style="font-size: 3rem;"></i>  
+                        </div>  
+                    </div>  
+                    <h2 class="fw-bold text-warning mb-3">تم إلغاء الدفع</h2>  
+                    <p class="text-muted mb-4">@ViewBag.Message</p>  
+
+                    @if (!string.IsNullOrEmpty(ViewBag.PaymentId))  
+                    {  
+                        <div class="bg-light rounded-3 p-3 mb-4">  
+                            <small class="text-muted d-block">رقم المعاملة</small>  
+                            <strong class="text-warning">#@ViewBag.PaymentId</strong>  
+                        </div>  
+                    }  
+
+                    <div class="d-grid gap-3">  
+                        <a href="@Url.Action("Index", "Courses")" class="btn-primary-custom">  
+                            <i class="fas fa-search me-2"></i>تصفح الكورسات  
+                        </a>  
+                        <div class="row g-2">  
+                            <div class="col-6">  
+                                <a href="@Url.Action("Index", "Home")" class="btn btn-outline-primary w-100">  
+                                    <i class="fas fa-home me-1"></i>الرئيسية  
+                                </a>  
+                            </div>  
+                            <div class="col-6">  
+                                <a href="@Url.Action("Index", "Payment")" class="btn btn-outline-secondary w-100">  
+                                    <i class="fas fa-receipt me-1"></i>المدفوعات  
+                                </a>  
+                            </div>  
+                        </div>  
+                    </div>  
+                </div>  
+            </div>  
+        </div>  
+    </div>  
+</div>  
+
+@section Scripts {  
+    <script>  
+        // Auto-refresh payment status for pending payments  
+        if (window.location.pathname.includes('/payment/')) {  
+            // Check for payment status updates every 30 seconds  
+            setInterval(function() {  
+                if (document.querySelector('.status-processing, .status-pending')) {  
+                    // Optionally refresh the page or check status via AJAX  
+                    console.log('Checking payment status...');  
+                }  
+            }, 30000);  
+        }  
+
+        // Payment form submission  
+        document.querySelector('form')?.addEventListener('submit', function(e) {  
+            const submitBtn = this.querySelector('button[type="submit"]');  
+            if (submitBtn) {  
+                showLoading(submitBtn, 'جاري التحويل للدفع...');  
+
+                // Show confirmation  
+                Swal.fire({  
+                    title: 'تأكيد الدفع',  
+                    text: 'سيتم تحويلك إلى بوابة الدفع الآمنة',  
+                    icon: 'info',  
+                    showCancelButton: true,  
+                    confirmButtonText: 'متابعة',  
+                    cancelButtonText: 'إلغاء',  
+                    confirmButtonColor: '#6366f1'  
+                }).then((result) => {  
+                    if (!result.isConfirmed) {  
+                        e.preventDefault();  
+                        hideLoading(submitBtn);  
+                    }  
+                });  
+            }  
+        });  
+    </script>  
+}  
+
+<!-- Fix for CS0103: Ensure the 'payment' variable is defined in the context -->  
+@{  
+    var payment = ViewBag.Payment; // Assuming 'Payment' is passed via ViewBag  
+}  
+
+<span class="fw-bold text-primary">#@payment?.Id</span>  
+</td>  
+<td class="align-middle">  
+    <div class="d-flex align-items-center">  
+        <div class="bg-primary rounded-3 p-2 me-3">  
+            <i class="fas fa-book text-white"></i>  
+        </div>  
+        <div>  
+            <h6 class="mb-0 fw-bold">@(payment?.Course?.Title ?? "كورس محذوف")</h6>  
+            <small class="text-muted">ID: @payment?.CourseId</small>  
+        </div>  
+    </div>  
+</td>  
+<td class="align-middle">
