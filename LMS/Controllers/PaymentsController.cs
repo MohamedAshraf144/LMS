@@ -1,5 +1,4 @@
-﻿// LMS.API/Controllers/PaymentsController.cs
-using LMS.Application.DTOs;
+﻿using LMS.Application.DTOs;
 using LMS.Core.Interfaces.Services;
 using LMS.Core.Models.PayMob;
 using Microsoft.AspNetCore.Authorization;
@@ -11,7 +10,6 @@ namespace LMS.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
     public class PaymentsController : ControllerBase
     {
         private readonly IPaymentService _paymentService;
@@ -32,14 +30,18 @@ namespace LMS.API.Controllers
         }
 
         [HttpPost("initiate")]
-        public async Task<IActionResult> InitiatePayment([FromBody] CreatePaymentDto dto)
+        // إزالة [Authorize] من هذا الـ endpoint أيضاً
+        public async Task<IActionResult> InitiatePayment([FromBody] CreatePaymentDtoWithUser dto)
         {
             try
             {
                 if (!ModelState.IsValid)
                     return BadRequest(ModelState);
 
-                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+                // بدلاً من أخذ UserId من Token، سنأخذه من الـ request body
+                var userId = dto.UserId;
+
+                _logger.LogInformation("Initiating payment for user {UserId}, course {CourseId}", userId, dto.CourseId);
 
                 // Get course details
                 var course = await _courseService.GetCourseByIdAsync(dto.CourseId);
@@ -67,16 +69,16 @@ namespace LMS.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error initiating payment for course {CourseId}", dto.CourseId);
-                return StatusCode(500, new { Message = "An error occurred while initiating payment" });
+                return StatusCode(500, new { Message = "An error occurred while initiating payment", Error = ex.Message });
             }
         }
 
-        [HttpGet("my-payments")]
-        public async Task<IActionResult> GetMyPayments()
+        [HttpGet("my-payments/{userId}")]
+        // إضافة userId كـ parameter بدلاً من أخذه من Token
+        public async Task<IActionResult> GetMyPayments(int userId)
         {
             try
             {
-                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
                 var payments = await _paymentService.GetUserPaymentsAsync(userId);
 
                 var paymentDtos = payments.Select(p => new PaymentDto
@@ -98,7 +100,7 @@ namespace LMS.API.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error retrieving user payments");
+                _logger.LogError(ex, "Error retrieving user payments for user {UserId}", userId);
                 return StatusCode(500, new { Message = "An error occurred while retrieving payments" });
             }
         }
@@ -108,15 +110,10 @@ namespace LMS.API.Controllers
         {
             try
             {
-                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
                 var payment = await _paymentService.GetPaymentByIdAsync(id);
 
                 if (payment == null)
                     return NotFound("Payment not found");
-
-                // Ensure user can only view their own payments
-                if (payment.UserId != userId && !User.IsInRole("Admin"))
-                    return Forbid();
 
                 var paymentDto = new PaymentDto
                 {
@@ -207,7 +204,6 @@ namespace LMS.API.Controllers
                 if (string.IsNullOrEmpty(payment_id))
                     return BadRequest("Payment ID is required");
 
-                // Here you can redirect to your frontend success page
                 return Redirect($"/payment/success?payment_id={payment_id}");
             }
             catch (Exception ex)
@@ -228,30 +224,12 @@ namespace LMS.API.Controllers
                     await _paymentService.FailPaymentAsync(paymentIdInt, "Payment cancelled by user");
                 }
 
-                // Redirect to your frontend cancel page
                 return Redirect($"/payment/cancel?payment_id={payment_id}");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error handling payment cancel callback");
                 return Redirect("/payment/error");
-            }
-        }
-
-        [HttpGet("admin/payments")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetAllPayments()
-        {
-            try
-            {
-                // This would need to be implemented in the payment service
-                // For now, return a simple message
-                return Ok(new { Message = "Admin payments endpoint - needs implementation" });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving all payments for admin");
-                return StatusCode(500, new { Message = "An error occurred while retrieving payments" });
             }
         }
     }

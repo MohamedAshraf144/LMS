@@ -1,8 +1,11 @@
-// LMS.Web/Program.cs
+// LMS.Web/Program.cs - Updated with proper authentication
 using Microsoft.EntityFrameworkCore;
 using LMS.Infrastructure.Data;
 using LMS.Shared.Extensions;
 using LMS.Core.Models.PayMob;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +22,35 @@ builder.Services.AddLMSServices();
 // PayMob Configuration
 builder.Services.Configure<PayMobConfiguration>(
     builder.Configuration.GetSection("PayMob"));
+
+// JWT Authentication Configuration
+var jwtKey = builder.Configuration["Jwt:Key"];
+if (!string.IsNullOrEmpty(jwtKey))
+{
+    var key = Encoding.ASCII.GetBytes(jwtKey);
+
+    builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.RequireHttpsMetadata = false;
+        options.SaveToken = true;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+}
 
 // Session
 builder.Services.AddDistributedMemoryCache();
@@ -85,6 +117,8 @@ app.UseCors("AllowLocalhost");
 // Use Session
 app.UseSession();
 
+// Authentication & Authorization
+app.UseAuthentication();
 app.UseAuthorization();
 
 // Default MVC Routes

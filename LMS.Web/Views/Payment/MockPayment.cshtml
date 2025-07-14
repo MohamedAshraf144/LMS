@@ -1,0 +1,110 @@
+﻿@{
+    ViewData["Title"] = "Mock Payment Gateway";
+    var token = Context.Request.Query["token"].FirstOrDefault();
+}
+
+<div class="auth-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card-modern text-center p-5">
+                    <div class="mb-4">
+                        <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                             style="width: 100px; height: 100px;">
+                            <i class="fas fa-credit-card text-white" style="font-size: 3rem;"></i>
+                        </div>
+                    </div>
+
+                    <h2 class="fw-bold text-primary mb-3">Mock Payment Gateway</h2>
+                    <p class="text-muted mb-4">This is a simulated payment page for testing purposes</p>
+
+                    @if (!string.IsNullOrEmpty(token))
+                    {
+                        <div class="bg-light rounded-3 p-3 mb-4">
+                            <small class="text-muted d-block">Payment Token</small>
+                            <strong class="text-primary" style="font-family: monospace; font-size: 0.8rem;">@token</strong>
+                        </div>
+                    }
+
+                    <div class="mb-4">
+                        <h5 class="fw-bold mb-3">Payment Details</h5>
+                        <div class="row text-start">
+                            <div class="col-6">
+                                <small class="text-muted">Amount:</small>
+                                <div class="fw-bold">$50.00</div>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Currency:</small>
+                                <div class="fw-bold">USD</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Test Mode:</strong> This is a simulation. No real payment will be processed.
+                    </div>
+
+                    <div class="d-grid gap-3">
+                        <button onclick="simulateSuccess()" class="btn btn-success btn-lg">
+                            <i class="fas fa-check me-2"></i>Simulate Successful Payment
+                        </button>
+
+                        <button onclick="simulateFailure()" class="btn btn-danger btn-lg">
+                            <i class="fas fa-times me-2"></i>Simulate Failed Payment
+                        </button>
+
+                        <a href="@Url.Action("Cancel", "Payment", new { payment_id = "mock_123" })"
+                           class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-arrow-left me-2"></i>Cancel Payment
+                        </a>
+                    </div>
+
+                    <div class="mt-4">
+                        <small class="text-muted">
+                            <i class="fas fa-shield-alt me-1"></i>
+                            This is a mock payment gateway for testing the LMS payment flow
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function simulateSuccess() {
+            // إظهار loading
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+
+            // محاكاة تأخير معالجة الدفع
+            setTimeout(() => {
+                // إعادة توجيه إلى صفحة النجاح
+                window.location.href = '@Url.Action("Success", "Payment", new { payment_id = "mock_success_123" })';
+            }, 2000);
+        }
+
+        function simulateFailure() {
+            // إظهار loading
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+
+            // محاكاة تأخير معالجة الدفع
+            setTimeout(() => {
+                // إعادة توجيه إلى صفحة الخطأ
+                alert('Payment Failed: Insufficient funds');
+                window.location.href = '@Url.Action("Cancel", "Payment", new { payment_id = "mock_failed_123" })';
+            }, 2000);
+        }
+
+        // معلومات debug
+        console.log('Mock Payment Page Loaded', {
+            token: '@token',
+            timestamp: new Date().toISOString()
+        });
+    </script>
+}

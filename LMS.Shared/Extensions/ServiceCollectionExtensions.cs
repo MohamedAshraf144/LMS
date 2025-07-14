@@ -1,4 +1,4 @@
-﻿// LMS.Shared/Extensions/ServiceCollectionExtensions.cs
+﻿// LMS.Shared/Extensions/ServiceCollectionExtensions.cs - محدث لاستخدام Mock Service
 using Microsoft.Extensions.DependencyInjection;
 using LMS.Core.Interfaces;
 using LMS.Core.Interfaces.Services;
@@ -23,10 +23,15 @@ namespace LMS.Shared.Extensions
 
             // Add Payment services
             services.AddScoped<IPaymentService, PaymentService>();
-            services.AddScoped<IPayMobService, PayMobService>();
 
-            // Add HttpClient for PayMob
-            services.AddHttpClient<IPayMobService, PayMobService>();
+            // استخدام Mock PayMob Service بدلاً من الحقيقي
+            services.AddScoped<IPayMobService, MockPayMobService>();
+
+            // إذا كنت تريد استخدام PayMob الحقيقي، استخدم هذا السطر بدلاً من السطر السابق:
+            // services.AddScoped<IPayMobService, PayMobService>();
+
+            // Add HttpClient for PayMob (حتى لو كان mock)
+            services.AddHttpClient<IPayMobService, MockPayMobService>();
 
             return services;
         }

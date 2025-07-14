@@ -1,4 +1,4 @@
-﻿// LMS.Application/Services/PayMobService.cs
+﻿// LMS.Application/Services/PayMobService.cs - Enhanced with better error handling
 using LMS.Core.Interfaces.Services;
 using LMS.Core.Models;
 using LMS.Core.Models.PayMob;
@@ -22,23 +22,72 @@ namespace LMS.Application.Services
             _logger = logger;
             _config = new PayMobConfiguration();
             configuration.GetSection("PayMob").Bind(_config);
+
+            // Validate configuration
+            ValidateConfiguration();
+        }
+
+        private void ValidateConfiguration()
+        {
+            var errors = new List<string>();
+
+            if (string.IsNullOrEmpty(_config.ApiKey))
+                errors.Add("PayMob ApiKey is not configured");
+
+            if (string.IsNullOrEmpty(_config.IntegrationId))
+                errors.Add("PayMob IntegrationId is not configured");
+
+            if (string.IsNullOrEmpty(_config.IframeId))
+                errors.Add("PayMob IframeId is not configured");
+
+            if (string.IsNullOrEmpty(_config.BaseUrl))
+                errors.Add("PayMob BaseUrl is not configured");
+
+            if (errors.Any())
+            {
+                var errorMessage = "PayMob configuration errors: " + string.Join(", ", errors);
+                _logger.LogError(errorMessage);
+                throw new InvalidOperationException(errorMessage);
+            }
+
+            _logger.LogInformation("PayMob configuration validated successfully");
         }
 
         public async Task<string> GetAuthTokenAsync()
         {
             try
             {
+                _logger.LogInformation("Requesting PayMob auth token");
+
                 var request = new AuthTokenRequest { api_key = _config.ApiKey };
                 var json = JsonSerializer.Serialize(request);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
+                _logger.LogDebug("Sending auth request to: {Url}", $"{_config.BaseUrl}/auth/tokens");
+
                 var response = await _httpClient.PostAsync($"{_config.BaseUrl}/auth/tokens", content);
-                response.EnsureSuccessStatusCode();
 
-                var responseJson = await response.Content.ReadAsStringAsync();
-                var authResponse = JsonSerializer.Deserialize<AuthTokenResponse>(responseJson);
+                var responseContent = await response.Content.ReadAsStringAsync();
+                _logger.LogDebug("PayMob auth response status: {StatusCode}, Content: {Content}",
+                    response.StatusCode, responseContent);
 
-                return authResponse?.token ?? throw new Exception("Failed to get auth token");
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogError("PayMob auth failed with status {StatusCode}: {Content}",
+                        response.StatusCode, responseContent);
+                    throw new HttpRequestException($"PayMob auth failed: {response.StatusCode} - {responseContent}");
+                }
+
+                var authResponse = JsonSerializer.Deserialize<AuthTokenResponse>(responseContent);
+
+                if (authResponse?.token == null)
+                {
+                    _logger.LogError("PayMob auth response missing token: {Content}", responseContent);
+                    throw new InvalidOperationException("PayMob auth response missing token");
+                }
+
+                _logger.LogInformation("PayMob auth token received successfully");
+                return authResponse.token;
             }
             catch (Exception ex)
             {
@@ -51,6 +100,8 @@ namespace LMS.Application.Services
         {
             try
             {
+                _logger.LogInformation("Creating PayMob order for amount {Amount}", amount);
+
                 var amountCents = (int)(amount * 100);
                 var request = new OrderRequest
                 {
@@ -71,13 +122,31 @@ namespace LMS.Application.Services
                 var json = JsonSerializer.Serialize(request);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
+                _logger.LogDebug("Sending order request to: {Url}", $"{_config.BaseUrl}/ecommerce/orders");
+
                 var response = await _httpClient.PostAsync($"{_config.BaseUrl}/ecommerce/orders", content);
-                response.EnsureSuccessStatusCode();
+                var responseContent = await response.Content.ReadAsStringAsync();
 
-                var responseJson = await response.Content.ReadAsStringAsync();
-                var orderResponse = JsonSerializer.Deserialize<OrderResponse>(responseJson);
+                _logger.LogDebug("PayMob order response status: {StatusCode}, Content: {Content}",
+                    response.StatusCode, responseContent);
 
-                return orderResponse?.id ?? throw new Exception("Failed to create order");
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogError("PayMob order creation failed with status {StatusCode}: {Content}",
+                        response.StatusCode, responseContent);
+                    throw new HttpRequestException($"PayMob order creation failed: {response.StatusCode} - {responseContent}");
+                }
+
+                var orderResponse = JsonSerializer.Deserialize<OrderResponse>(responseContent);
+
+                if (orderResponse?.id == 0)
+                {
+                    _logger.LogError("PayMob order response missing ID: {Content}", responseContent);
+                    throw new InvalidOperationException("PayMob order response missing ID");
+                }
+
+                _logger.LogInformation("PayMob order created successfully with ID {OrderId}", orderResponse.id);
+                return orderResponse.id;
             }
             catch (Exception ex)
             {
@@ -90,6 +159,8 @@ namespace LMS.Application.Services
         {
             try
             {
+                _logger.LogInformation("Getting PayMob payment token for order {OrderId}", orderId);
+
                 var amountCents = (int)(amount * 100);
                 var request = new PaymentKeyRequest
                 {
@@ -109,13 +180,31 @@ namespace LMS.Application.Services
                 var json = JsonSerializer.Serialize(request);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
+                _logger.LogDebug("Sending payment key request to: {Url}", $"{_config.BaseUrl}/acceptance/payment_keys");
+
                 var response = await _httpClient.PostAsync($"{_config.BaseUrl}/acceptance/payment_keys", content);
-                response.EnsureSuccessStatusCode();
+                var responseContent = await response.Content.ReadAsStringAsync();
 
-                var responseJson = await response.Content.ReadAsStringAsync();
-                var paymentResponse = JsonSerializer.Deserialize<PaymentKeyResponse>(responseJson);
+                _logger.LogDebug("PayMob payment key response status: {StatusCode}, Content: {Content}",
+                    response.StatusCode, responseContent);
 
-                return paymentResponse?.token ?? throw new Exception("Failed to get payment token");
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogError("PayMob payment key creation failed with status {StatusCode}: {Content}",
+                        response.StatusCode, responseContent);
+                    throw new HttpRequestException($"PayMob payment key creation failed: {response.StatusCode} - {responseContent}");
+                }
+
+                var paymentResponse = JsonSerializer.Deserialize<PaymentKeyResponse>(responseContent);
+
+                if (paymentResponse?.token == null)
+                {
+                    _logger.LogError("PayMob payment key response missing token: {Content}", responseContent);
+                    throw new InvalidOperationException("PayMob payment key response missing token");
+                }
+
+                _logger.LogInformation("PayMob payment token received successfully");
+                return paymentResponse.token;
             }
             catch (Exception ex)
             {
@@ -126,8 +215,17 @@ namespace LMS.Application.Services
 
         public Task<string> GetPaymentUrlAsync(string paymentToken)
         {
-            var paymentUrl = $"https://accept.paymob.com/api/acceptance/iframes/{_config.IframeId}?payment_token={paymentToken}";
-            return Task.FromResult(paymentUrl);
+            try
+            {
+                var paymentUrl = $"https://accept.paymob.com/api/acceptance/iframes/{_config.IframeId}?payment_token={paymentToken}";
+                _logger.LogInformation("Generated PayMob payment URL: {PaymentUrl}", paymentUrl);
+                return Task.FromResult(paymentUrl);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error generating PayMob payment URL");
+                throw;
+            }
         }
 
         public Task<bool> VerifyWebhookAsync(string payload, string signature)
@@ -144,7 +242,10 @@ namespace LMS.Application.Services
                 var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(payload));
                 var computedSignature = Convert.ToHexString(computedHash).ToLower();
 
-                return Task.FromResult(computedSignature == signature?.ToLower());
+                var isValid = computedSignature == signature?.ToLower();
+                _logger.LogDebug("Webhook signature verification result: {IsValid}", isValid);
+
+                return Task.FromResult(isValid);
             }
             catch (Exception ex)
             {
@@ -157,13 +258,23 @@ namespace LMS.Application.Services
         {
             try
             {
+                _logger.LogInformation("Processing PayMob webhook");
+
                 var options = new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true
                 };
 
                 var webhookData = JsonSerializer.Deserialize<WebhookData>(payload, options);
-                return webhookData?.obj;
+
+                if (webhookData?.obj == null)
+                {
+                    _logger.LogWarning("Webhook data missing transaction object");
+                    return null;
+                }
+
+                _logger.LogInformation("Processed webhook for transaction {TransactionId}", webhookData.obj.id);
+                return webhookData.obj;
             }
             catch (Exception ex)
             {
