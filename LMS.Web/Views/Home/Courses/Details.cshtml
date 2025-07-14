@@ -1,0 +1,410 @@
+﻿@model LMS.Core.Models.Course
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div class="container mt-5 pt-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Course Header -->
+            <div class="bg-dark text-white rounded-4 p-5 mb-4">
+                <nav aria-label="breadcrumb" class="mb-4">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")" class="text-light">Home</a></li>
+                        <li class="breadcrumb-item"><a href="@Url.Action("Index", "Courses")" class="text-light">Courses</a></li>
+                        <li class="breadcrumb-item active text-warning">@Model.Title</li>
+                    </ol>
+                </nav>
+
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    @switch (Model.Level)
+                    {
+                        case LMS.Core.Enums.CourseLevel.Beginner:
+                            <span class="badge bg-primary fs-6">Beginner</span>
+                            break;
+                        case LMS.Core.Enums.CourseLevel.Intermediate:
+                            <span class="badge bg-warning fs-6">Intermediate</span>
+                            break;
+                        case LMS.Core.Enums.CourseLevel.Advanced:
+                            <span class="badge bg-danger fs-6">Advanced</span>
+                            break;
+                    }
+                    <span class="badge bg-info fs-6">
+                        <i class="fas fa-clock me-1"></i>@Model.Duration hours
+                    </span>
+                    <span class="badge bg-warning fs-6">
+                        <i class="fas fa-star me-1"></i>4.0
+                    </span>
+                    @if (Model.Category != null)
+                    {
+                        <span class="badge bg-success fs-6">
+                            <i class="fas fa-tag me-1"></i>@Model.Category.Name
+                        </span>
+                    }
+                </div>
+
+                <h1 class="display-6 fw-bold mb-3">@Model.Title</h1>
+                <p class="lead mb-4">@(Model.Description ?? "A comprehensive course designed to help you master new skills")</p>
+
+                <div class="d-flex align-items-center">
+                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=50&h=50&q=80"
+                         alt="Instructor" class="rounded-circle me-3" style="width: 50px; height: 50px;">
+                    <div>
+                        <h6 class="mb-0">@(Model.Instructor?.FirstName ?? "Expert") @(Model.Instructor?.LastName ?? "Instructor")</h6>
+                        <small class="text-light opacity-75">Course Instructor</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Course Content -->
+            <div class="card-modern mb-4">
+                <div class="card-body p-4">
+                    <h3 class="fw-bold mb-4">What You'll Learn</h3>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>Master the fundamentals
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>Build real-world projects
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>Best practices and techniques
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>Industry-relevant skills
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>Hands-on experience
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>Career advancement
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Course Requirements -->
+            <div class="card-modern mb-4">
+                <div class="card-body p-4">
+                    <h3 class="fw-bold mb-4">Course Requirements</h3>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-laptop text-primary me-2"></i>Computer or smartphone
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-wifi text-primary me-2"></i>Internet connection
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-heart text-primary me-2"></i>Willingness to learn and grow
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-clock text-primary me-2"></i>Time for practice
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Course Content/Curriculum -->
+            <div class="card-modern">
+                <div class="card-body p-4">
+                    <h3 class="fw-bold mb-4">Course Content</h3>
+                    <div id="courseLessons">
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading content...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Course Image/Video Preview -->
+            <div class="card-modern mb-4">
+                <div class="course-image" style="height: 250px; position: relative;">
+                    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                    {
+                        <img src="@Model.ImageUrl" alt="@Model.Title" style="width: 100%; height: 100%; object-fit: cover;">
+                    }
+                    else
+                    {
+                        <i class="fas fa-play-circle text-white fs-1"></i>
+                    }
+                    <div class="position-absolute top-50 start-50 translate-middle">
+                        <button class="btn btn-light btn-lg rounded-circle" style="width: 80px; height: 80px;">
+                            <i class="fas fa-play text-primary fs-2"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Enrollment Card -->
+            <div class="card-modern mb-4 sticky-top" style="top: 100px;">
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        @if (Model.Price.HasValue && Model.Price > 0)
+                        {
+                            <h3 class="fw-bold text-primary mb-2">$@Model.Price.Value.ToString("F0")</h3>
+                            <p class="text-muted">Full lifetime access</p>
+                        }
+                        else
+                        {
+                            <h3 class="fw-bold text-success mb-2">Free</h3>
+                            <p class="text-muted">Start learning now</p>
+                        }
+                    </div>
+
+                    @if (Context.Session.GetString("UserId") != null)
+                    {
+                        @if (Model.Price.HasValue && Model.Price > 0)
+                        {
+                            <a href="@Url.Action("PayForCourse", "Payment", new { courseId = Model.Id })"
+                               class="btn-primary-custom w-100 mb-3">
+                                <i class="fas fa-credit-card me-2"></i>Enroll Now
+                            </a>
+                        }
+                        else
+                        {
+                            <form asp-controller="Courses" asp-action="Enroll" method="post">
+                                <input type="hidden" name="courseId" value="@Model.Id" />
+                                <button type="submit" class="btn-primary-custom w-100 mb-3">
+                                    <i class="fas fa-user-plus me-2"></i>Enroll for Free
+                                </button>
+                            </form>
+                        }
+                    }
+                    else
+                    {
+                        <a href="@Url.Action("Login", "Account")" class="btn-primary-custom w-100 mb-3">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login to Enroll
+                        </a>
+                    }
+
+                    <div class="text-center mb-4">
+                        <small class="text-muted">30-day money-back guarantee</small>
+                    </div>
+
+                    <div class="border-top pt-4">
+                        <h6 class="fw-bold mb-3">This course includes:</h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-clock text-primary me-2"></i>
+                                @Model.Duration hours of content
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-play-circle text-primary me-2"></i>
+                                Video lessons
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-file-alt text-primary me-2"></i>
+                                Learning materials
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-mobile-alt text-primary me-2"></i>
+                                Access on mobile and desktop
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-infinity text-primary me-2"></i>
+                                Lifetime access
+                            </li>
+                            <li class="mb-0">
+                                <i class="fas fa-certificate text-primary me-2"></i>
+                                Certificate of completion
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Instructor Info -->
+            <div class="card-modern">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3">Your Instructor</h5>
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=60&h=60&q=80"
+                             alt="Instructor" class="rounded-circle me-3" style="width: 60px; height: 60px;">
+                        <div>
+                            <h6 class="mb-0">@(Model.Instructor?.FirstName ?? "Expert") @(Model.Instructor?.LastName ?? "Instructor")</h6>
+                            <small class="text-muted">Senior Developer</small>
+                        </div>
+                    </div>
+                    <p class="text-muted small">
+                        Experienced professional with years of industry expertise, passionate about teaching and helping students succeed.
+                    </p>
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <h6 class="fw-bold">4.8</h6>
+                            <small class="text-muted">Rating</small>
+                        </div>
+                        <div class="col-4">
+                            <h6 class="fw-bold">10+</h6>
+                            <small class="text-muted">Courses</small>
+                        </div>
+                        <div class="col-4">
+                            <h6 class="fw-bold">1K+</h6>
+                            <small class="text-muted">Students</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Load course lessons/curriculum (placeholder for now)
+        document.addEventListener('DOMContentLoaded', function() {
+            // Simulate loading course lessons
+            setTimeout(function() {
+                document.getElementById('courseLessons').innerHTML = `
+                    <div class="accordion" id="courseAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#section1">
+                                    <i class="fas fa-play-circle text-primary me-2"></i>
+                                    Section 1: Getting Started
+                                    <span class="badge bg-light text-dark ms-auto me-2">3 lessons</span>
+                                </button>
+                            </h2>
+                            <div id="section1" class="accordion-collapse collapse show" data-bs-parent="#courseAccordion">
+                                <div class="accordion-body">
+                                    <div class="lesson-item d-flex align-items-center p-3 border-bottom">
+                                        <i class="fas fa-play text-primary me-3"></i>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">Introduction to the Course</h6>
+                                            <small class="text-muted">5 minutes</small>
+                                        </div>
+                                        <i class="fas fa-lock text-muted"></i>
+                                    </div>
+                                    <div class="lesson-item d-flex align-items-center p-3 border-bottom">
+                                        <i class="fas fa-play text-primary me-3"></i>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">Setting Up Your Environment</h6>
+                                            <small class="text-muted">15 minutes</small>
+                                        </div>
+                                        <i class="fas fa-lock text-muted"></i>
+                                    </div>
+                                    <div class="lesson-item d-flex align-items-center p-3">
+                                        <i class="fas fa-play text-primary me-3"></i>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">Your First Project</h6>
+                                            <small class="text-muted">20 minutes</small>
+                                        </div>
+                                        <i class="fas fa-lock text-muted"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#section2">
+                                    <i class="fas fa-play-circle text-primary me-2"></i>
+                                    Section 2: Core Concepts
+                                    <span class="badge bg-light text-dark ms-auto me-2">5 lessons</span>
+                                </button>
+                            </h2>
+                            <div id="section2" class="accordion-collapse collapse" data-bs-parent="#courseAccordion">
+                                <div class="accordion-body">
+                                    <div class="lesson-item d-flex align-items-center p-3 border-bottom">
+                                        <i class="fas fa-play text-primary me-3"></i>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">Understanding the Basics</h6>
+                                            <small class="text-muted">25 minutes</small>
+                                        </div>
+                                        <i class="fas fa-lock text-muted"></i>
+                                    </div>
+                                    <div class="lesson-item d-flex align-items-center p-3 border-bottom">
+                                        <i class="fas fa-play text-primary me-3"></i>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">Advanced Techniques</h6>
+                                            <small class="text-muted">30 minutes</small>
+                                        </div>
+                                        <i class="fas fa-lock text-muted"></i>
+                                    </div>
+                                    <div class="lesson-item d-flex align-items-center p-3 border-bottom">
+                                        <i class="fas fa-play text-primary me-3"></i>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">Best Practices</h6>
+                                            <small class="text-muted">20 minutes</small>
+                                        </div>
+                                        <i class="fas fa-lock text-muted"></i>
+                                    </div>
+                                    <div class="lesson-item d-flex align-items-center p-3 border-bottom">
+                                        <i class="fas fa-play text-primary me-3"></i>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">Common Mistakes to Avoid</h6>
+                                            <small class="text-muted">15 minutes</small>
+                                        </div>
+                                        <i class="fas fa-lock text-muted"></i>
+                                    </div>
+                                    <div class="lesson-item d-flex align-items-center p-3">
+                                        <i class="fas fa-play text-primary me-3"></i>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">Practice Exercise</h6>
+                                            <small class="text-muted">45 minutes</small>
+                                        </div>
+                                        <i class="fas fa-lock text-muted"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#section3">
+                                    <i class="fas fa-play-circle text-primary me-2"></i>
+                                    Section 3: Final Project
+                                    <span class="badge bg-light text-dark ms-auto me-2">2 lessons</span>
+                                </button>
+                            </h2>
+                            <div id="section3" class="accordion-collapse collapse" data-bs-parent="#courseAccordion">
+                                <div class="accordion-body">
+                                    <div class="lesson-item d-flex align-items-center p-3 border-bottom">
+                                        <i class="fas fa-play text-primary me-3"></i>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">Building Your Final Project</h6>
+                                            <small class="text-muted">60 minutes</small>
+                                        </div>
+                                        <i class="fas fa-lock text-muted"></i>
+                                    </div>
+                                    <div class="lesson-item d-flex align-items-center p-3">
+                                        <i class="fas fa-play text-primary me-3"></i>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">Course Conclusion & Next Steps</h6>
+                                            <small class="text-muted">10 minutes</small>
+                                        </div>
+                                        <i class="fas fa-lock text-muted"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }, 1000);
+        });
+
+        // Enrollment form submission
+        document.querySelector('form')?.addEventListener('submit', function(e) {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                showLoading(submitBtn, 'Enrolling...');
+            }
+        });
+
+        function showLoading(button, text = 'Loading...') {
+            const originalText = button.innerHTML;
+            button.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>${text}`;
+            button.disabled = true;
+            button.dataset.originalText = originalText;
+        }
+    </script>
+}

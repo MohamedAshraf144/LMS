@@ -1,0 +1,172 @@
+﻿@model LMS.Application.DTOs.CreateUserDto
+@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="auth-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <i class="fas fa-user-plus fa-3x mb-3"></i>
+                        <h2 class="fw-bold mb-2">Join Learning Hub</h2>
+                        <p class="mb-0 opacity-75">Create your account and start learning today</p>
+                    </div>
+                    <div class="auth-body">
+                        <form asp-action="Register" method="post" id="registerForm">
+                            <div asp-validation-summary="All" class="alert alert-danger d-none"></div>
+
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label asp-for="FirstName" class="form-label fw-semibold">First Name</label>
+                                    <input asp-for="FirstName" type="text" class="form-control" placeholder="John" required>
+                                    <span asp-validation-for="FirstName" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="LastName" class="form-label fw-semibold">Last Name</label>
+                                    <input asp-for="LastName" type="text" class="form-control" placeholder="Doe" required>
+                                    <span asp-validation-for="LastName" class="text-danger small"></span>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label asp-for="Email" class="form-label fw-semibold">Email Address</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-envelope"></i>
+                                    </span>
+                                    <input asp-for="Email" type="email" class="form-control" placeholder="john.doe@example.com" required>
+                                </div>
+                                <span asp-validation-for="Email" class="text-danger small"></span>
+                            </div>
+
+                            <div class="mb-4">
+                                <label asp-for="Phone" class="form-label fw-semibold">Phone Number <small class="text-muted">(Optional)</small></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-phone"></i>
+                                    </span>
+                                    <input asp-for="Phone" type="tel" class="form-control" placeholder="+1 234 567 8900">
+                                </div>
+                                <span asp-validation-for="Phone" class="text-danger small"></span>
+                            </div>
+
+                            <div class="mb-4">
+                                <label asp-for="Password" class="form-label fw-semibold">Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-lock"></i>
+                                    </span>
+                                    <input asp-for="Password" type="password" class="form-control" placeholder="Choose a strong password" required>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword(this)">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <div class="form-text">Password must be at least 6 characters long</div>
+                                <span asp-validation-for="Password" class="text-danger small"></span>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">I want to:</label>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input asp-for="Role" class="form-check-input" type="radio" value="1" id="roleStudent" checked>
+                                            <label class="form-check-label" for="roleStudent">
+                                                <i class="fas fa-graduation-cap text-primary me-2"></i>Learn (Student)
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input asp-for="Role" class="form-check-input" type="radio" value="2" id="roleInstructor">
+                                            <label class="form-check-label" for="roleInstructor">
+                                                <i class="fas fa-chalkboard-teacher text-success me-2"></i>Teach (Instructor)
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn-primary-custom w-100 mb-4">
+                                <i class="fas fa-user-plus me-2"></i>Create Account
+                            </button>
+
+                            <div class="text-center">
+                                <p class="mb-0">
+                                    Already have an account?
+                                    <a href="@Url.Action("Login", "Account")" class="text-primary fw-semibold text-decoration-none">
+                                        Sign In
+                                    </a>
+                                </p>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        // Form submission with loading state
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            showLoading(submitBtn, 'Creating account...');
+        });
+
+        // Focus management
+        document.addEventListener('DOMContentLoaded', function() {
+            const firstNameInput = document.getElementById('FirstName');
+            if (firstNameInput && !firstNameInput.value) {
+                firstNameInput.focus();
+            }
+        });
+
+        // Validation errors display
+        @if (!ViewData.ModelState.IsValid)
+        {
+                <text>
+                const errorAlert = document.querySelector('.alert-danger');
+                if (errorAlert) {
+                    errorAlert.classList.remove('d-none');
+                    errorAlert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                </text>
+        }
+
+        // Auto-hide validation errors on input
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', function() {
+                const validationSpan = this.parentElement.parentElement.querySelector('.text-danger');
+                if (validationSpan) {
+                    validationSpan.textContent = '';
+                }
+            });
+        });
+
+        // Password strength indicator
+        document.getElementById('Password').addEventListener('input', function() {
+            const password = this.value;
+            const formText = this.parentElement.nextElementSibling;
+
+            if (password.length === 0) {
+                formText.textContent = 'Password must be at least 6 characters long';
+                formText.className = 'form-text';
+            } else if (password.length < 6) {
+                formText.textContent = 'Password too short';
+                formText.className = 'form-text text-danger';
+            } else if (password.length >= 6 && password.length < 8) {
+                formText.textContent = 'Good password';
+                formText.className = 'form-text text-warning';
+            } else {
+                formText.textContent = 'Strong password';
+                formText.className = 'form-text text-success';
+            }
+        });
+    </script>
+}

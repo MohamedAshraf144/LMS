@@ -1,6 +1,6 @@
 ﻿@model IEnumerable<LMS.Core.Models.Course>
 @{
-    ViewData["Title"] = "HomePage";
+    ViewData["Title"] = "Home";
 }
 
 <!-- Hero Section -->
@@ -9,18 +9,18 @@
         <div class="row align-items-center">
             <div class="col-lg-6 fade-in">
                 <h1 class="hero-title">
-                    اكتشف مستقبلك مع
-                    <span class="text-warning">التعليم المتميز</span>
+                    Discover Your Future with
+                    <span class="text-warning">Quality Education</span>
                 </h1>
                 <p class="hero-subtitle">
-                    اكتشف آلاف الكورسات من خبراء متخصصين وطور مهاراتك في التكنولوجيا والأعمال والتصميم وأكثر.
+                    Discover thousands of courses from expert instructors and develop your skills in technology, business, design, and more.
                 </p>
                 <div class="d-flex flex-wrap gap-3">
                     <a href="@Url.Action("Index", "Courses")" class="btn btn-light btn-lg px-4 py-3">
-                        <i class="fas fa-search me-2"></i>استكشف الكورسات
+                        <i class="fas fa-search me-2"></i>Explore Courses
                     </a>
                     <a href="@Url.Action("Register", "Account")" class="btn btn-outline-light btn-lg px-4 py-3">
-                        <i class="fas fa-play me-2"></i>ابدأ الآن
+                        <i class="fas fa-play me-2"></i>Get Started
                     </a>
                 </div>
             </div>
@@ -34,8 +34,8 @@
                         <div class="d-flex align-items-center">
                             <i class="fas fa-star text-warning fs-3 me-3"></i>
                             <div>
-                                <h6 class="mb-0">4.8/5 تقييم</h6>
-                                <small class="text-muted">من 10,000+ طالب</small>
+                                <h6 class="mb-0">4.8/5 Rating</h6>
+                                <small class="text-muted">From 10,000+ students</small>
                             </div>
                         </div>
                     </div>
@@ -44,88 +44,11 @@
                         <div class="d-flex align-items-center">
                             <i class="fas fa-users text-primary fs-3 me-3"></i>
                             <div>
-                                <h6 class="mb-0">50,000+ طالب</h6>
-                                <small class="text-muted">يتعلمون الآن</small>
+                                <h6 class="mb-0">50,000+ Students</h6>
+                                <small class="text-muted">Learning now</small>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Stats Section -->
-<section class="py-5" style="background: var(--dark); color: white;">
-    <div class="container">
-        <div class="row text-center g-4">
-            <div class="col-md-3">
-                <div class="p-4">
-                    <h3 class="display-4 fw-bold text-warning mb-2">500+</h3>
-                    <p class="h5 opacity-75">كورس متاح</p>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="p-4">
-                    <h3 class="display-4 fw-bold text-success mb-2">50K+</h3>
-                    <p class="h5 opacity-75">طالب سعيد</p>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="p-4">
-                    <h3 class="display-4 fw-bold text-info mb-2">150+</h3>
-                    <p class="h5 opacity-75">مدرب خبير</p>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="p-4">
-                    <h3 class="display-4 fw-bold text-danger mb-2">98%</h3>
-                    <p class="h5 opacity-75">معدل النجاح</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Features Section -->
-<section class="py-5 bg-light">
-    <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="display-6 fw-bold mb-3">لماذا Learning Hub؟</h2>
-            <p class="lead text-muted">كل ما تحتاجه لبدء رحلة التعلم اليوم</p>
-        </div>
-
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="card-modern h-100 p-4 text-center">
-                    <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-4"
-                         style="width: 80px; height: 80px;">
-                        <i class="fas fa-chalkboard-teacher text-white fs-2"></i>
-                    </div>
-                    <h4 class="fw-bold mb-3">مدربون خبراء</h4>
-                    <p class="text-muted">تعلم من محترفين في المجال بخبرة سنوات في العالم الحقيقي</p>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="card-modern h-100 p-4 text-center">
-                    <div class="bg-success rounded-circle d-inline-flex align-items-center justify-content-center mb-4"
-                         style="width: 80px; height: 80px;">
-                        <i class="fas fa-clock text-white fs-2"></i>
-                    </div>
-                    <h4 class="fw-bold mb-3">تعلم مرن</h4>
-                    <p class="text-muted">ادرس بوتيرتك الخاصة، في أي وقت وفي أي مكان يناسبك</p>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="card-modern h-100 p-4 text-center">
-                    <div class="bg-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-4"
-                         style="width: 80px; height: 80px;">
-                        <i class="fas fa-certificate text-white fs-2"></i>
-                    </div>
-                    <h4 class="fw-bold mb-3">احصل على شهادة</h4>
-                    <p class="text-muted">احصل على شهادات معتمدة في الصناعة عند إتمام الكورس</p>
                 </div>
             </div>
         </div>
@@ -137,11 +60,11 @@
     <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-5">
             <div>
-                <h2 class="display-6 fw-bold mb-2">الكورسات المميزة</h2>
-                <p class="text-muted">ابدأ التعلم مع أشهر كورساتنا</p>
+                <h2 class="display-6 fw-bold mb-2">Featured Courses</h2>
+                <p class="text-muted">Start learning with our most popular courses</p>
             </div>
             <a href="@Url.Action("Index", "Courses")" class="btn-primary-custom">
-                عرض جميع الكورسات <i class="fas fa-arrow-left ms-2"></i>
+                View All Courses <i class="fas fa-arrow-right ms-2"></i>
             </a>
         </div>
 
@@ -165,16 +88,16 @@
                                     @switch (course.Level)
                                     {
                                         case LMS.Core.Enums.CourseLevel.Beginner:
-                                            <span>مبتدئ</span>
+                                            <span>Beginner</span>
                                             break;
                                         case LMS.Core.Enums.CourseLevel.Intermediate:
-                                            <span>متوسط</span>
+                                            <span>Intermediate</span>
                                             break;
                                         case LMS.Core.Enums.CourseLevel.Advanced:
-                                            <span>متقدم</span>
+                                            <span>Advanced</span>
                                             break;
                                         default:
-                                            <span>مبتدئ</span>
+                                            <span>Beginner</span>
                                             break;
                                     }
                                 </div>
@@ -191,23 +114,23 @@
                                     <small class="text-muted">(4.0)</small>
                                 </div>
                                 <h5 class="fw-bold mb-3">@course.Title</h5>
-                                <p class="text-muted mb-3">@(course.Description ?? "تعلم مهارات جديدة مع هذا الكورس الشامل")</p>
+                                <p class="text-muted mb-3">@(course.Description ?? "Learn new skills with this comprehensive course")</p>
                                 <div class="d-flex justify-content-between align-items-center mb-3">
                                     <span class="course-price @(course.Price.HasValue && course.Price > 0 ? "text-success" : "text-primary")">
                                         @if (course.Price.HasValue && course.Price > 0)
                                         {
-                                            <span>@course.Price.Value.ToString("F0") جنيه</span>
+                                            <span>$@course.Price.Value.ToString("F0")</span>
                                         }
                                         else
                                         {
-                                            <span>مجاني</span>
+                                            <span>Free</span>
                                         }
                                     </span>
-                                    <small class="text-muted">@course.Duration ساعة</small>
+                                    <small class="text-muted">@course.Duration hours</small>
                                 </div>
                                 <a href="@Url.Action("Details", "Courses", new { id = course.Id })"
                                    class="btn btn-primary w-100">
-                                    <i class="fas fa-eye me-2"></i>عرض التفاصيل
+                                    <i class="fas fa-eye me-2"></i>View Details
                                 </a>
                             </div>
                         </div>
@@ -218,8 +141,8 @@
             {
                 <div class="col-12 text-center py-5">
                     <i class="fas fa-graduation-cap display-1 text-muted mb-4"></i>
-                    <h4 class="text-muted mb-3">لا توجد كورسات متاحة حتى الآن</h4>
-                    <p class="text-muted">نحن نعمل بجد لنقدم لك كورسات رائعة. تابعنا قريباً!</p>
+                    <h4 class="text-muted mb-3">No courses available yet</h4>
+                    <p class="text-muted">We're working hard to bring you amazing courses. Check back soon!</p>
                 </div>
             }
         </div>
@@ -231,14 +154,14 @@
     <div class="container">
         <div class="row align-items-center">
             <div class="col-lg-6 text-white">
-                <h3 class="fw-bold mb-3">ابق على اطلاع بأحدث الكورسات</h3>
-                <p class="opacity-75 mb-0">اشترك في نشرتنا البريدية واحصل على إشعار بأحدث الكورسات والعروض الخاصة</p>
+                <h3 class="fw-bold mb-3">Stay Updated with Latest Courses</h3>
+                <p class="opacity-75 mb-0">Subscribe to our newsletter and get notified about the latest courses and special offers</p>
             </div>
             <div class="col-lg-6">
                 <form class="d-flex gap-3">
-                    <input type="email" class="form-control" placeholder="أدخل بريدك الإلكتروني" required>
+                    <input type="email" class="form-control" placeholder="Enter your email address" required>
                     <button type="submit" class="btn btn-light text-primary px-4">
-                        <i class="fas fa-paper-plane me-2"></i>اشتراك
+                        <i class="fas fa-paper-plane me-2"></i>Subscribe
                     </button>
                 </form>
             </div>
@@ -250,8 +173,8 @@
 <section class="py-5 bg-light">
     <div class="container">
         <div class="text-center mb-5">
-            <h2 class="display-6 fw-bold mb-3">ماذا يقول طلابنا</h2>
-            <p class="lead text-muted">تجارب حقيقية من طلاب نجحوا في تطوير مهاراتهم</p>
+            <h2 class="display-6 fw-bold mb-3">What Our Students Say</h2>
+            <p class="lead text-muted">Real experiences from students who successfully developed their skills</p>
         </div>
 
         <div class="row g-4">
@@ -264,13 +187,13 @@
                         <i class="fas fa-star"></i>
                         <i class="fas fa-star"></i>
                     </div>
-                    <p class="text-muted mb-4">"منصة رائعة ساعدتني في تطوير مهاراتي في البرمجة. المحتوى ممتاز والمدربون محترفون."</p>
+                    <p class="text-muted mb-4">"Amazing platform that helped me develop my programming skills. The content is excellent and the instructors are professional."</p>
                     <div class="d-flex align-items-center">
                         <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=50&h=50&q=80"
                              alt="Student" class="rounded-circle me-3" style="width: 50px; height: 50px;">
                         <div>
-                            <h6 class="mb-0 fw-bold">أحمد محمد</h6>
-                            <small class="text-muted">مطور برمجيات</small>
+                            <h6 class="mb-0 fw-bold">Ahmed Mohamed</h6>
+                            <small class="text-muted">Software Developer</small>
                         </div>
                     </div>
                 </div>
@@ -285,13 +208,13 @@
                         <i class="fas fa-star"></i>
                         <i class="fas fa-star"></i>
                     </div>
-                    <p class="text-muted mb-4">"تجربة تعليمية مميزة. استطعت الحصول على وظيفة أحلامي بفضل المهارات التي تعلمتها هنا."</p>
+                    <p class="text-muted mb-4">"Outstanding learning experience. I was able to get my dream job thanks to the skills I learned here."</p>
                     <div class="d-flex align-items-center">
                         <img src="https://images.unsplash.com/photo-1494790108755-2616b612b5bb?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=50&h=50&q=80"
                              alt="Student" class="rounded-circle me-3" style="width: 50px; height: 50px;">
                         <div>
-                            <h6 class="mb-0 fw-bold">سارة أحمد</h6>
-                            <small class="text-muted">مصممة جرافيك</small>
+                            <h6 class="mb-0 fw-bold">Sarah Ahmed</h6>
+                            <small class="text-muted">Graphic Designer</small>
                         </div>
                     </div>
                 </div>
@@ -306,13 +229,13 @@
                         <i class="fas fa-star"></i>
                         <i class="fas fa-star"></i>
                     </div>
-                    <p class="text-muted mb-4">"أسلوب التدريس ممتاز والمحتوى محدث. أنصح الجميع بهذه المنصة لتطوير المهارات."</p>
+                    <p class="text-muted mb-4">"Excellent teaching approach and updated content. I recommend this platform to everyone for skill development."</p>
                     <div class="d-flex align-items-center">
                         <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=50&h=50&q=80"
                              alt="Student" class="rounded-circle me-3" style="width: 50px; height: 50px;">
                         <div>
-                            <h6 class="mb-0 fw-bold">عمر حسن</h6>
-                            <small class="text-muted">رائد أعمال</small>
+                            <h6 class="mb-0 fw-bold">Omar Hassan</h6>
+                            <small class="text-muted">Entrepreneur</small>
                         </div>
                     </div>
                 </div>
@@ -322,25 +245,6 @@
 </section>
 
 @section Scripts {
-    <style>
-        @@keyframes float {
-            0%, 100% {
-                transform: translateY(0px);
-            }
-
-            50% {
-                transform: translateY(-20px);
-            }
-        }
-
-        @@media (max-width: 768px) {
-            .hero-title {
-                font-size: 2rem;
-            }
-        }
-    </style>
-}
-
     <script>
         // Course card click handlers
         document.querySelectorAll('.course-card').forEach(card => {
@@ -361,13 +265,90 @@
 
             Swal.fire({
                 icon: 'success',
-                title: 'شكراً لك!',
-                text: 'تم الاشتراك بنجاح في النشرة البريدية',
-                confirmButtonText: 'موافق',
+                title: 'Thank You!',
+                text: 'Successfully subscribed to our newsletter',
+                confirmButtonText: 'OK',
                 confirmButtonColor: '#10b981'
             });
 
             this.reset();
         });
     </script>
-}
+}>
+</section>
+
+<!-- Stats Section -->
+<section class="py-5" style="background: var(--dark); color: white;">
+    <div class="container">
+        <div class="row text-center g-4">
+            <div class="col-md-3">
+                <div class="p-4">
+                    <h3 class="display-4 fw-bold text-warning mb-2">500+</h3>
+                    <p class="h5 opacity-75">Available Courses</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-4">
+                    <h3 class="display-4 fw-bold text-success mb-2">50K+</h3>
+                    <p class="h5 opacity-75">Happy Students</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-4">
+                    <h3 class="display-4 fw-bold text-info mb-2">150+</h3>
+                    <p class="h5 opacity-75">Expert Instructors</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-4">
+                    <h3 class="display-4 fw-bold text-danger mb-2">98%</h3>
+                    <p class="h5 opacity-75">Success Rate</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-6 fw-bold mb-3">Why Learning Hub?</h2>
+            <p class="lead text-muted">Everything you need to start your learning journey today</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card-modern h-100 p-4 text-center">
+                    <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-4"
+                         style="width: 80px; height: 80px;">
+                        <i class="fas fa-chalkboard-teacher text-white fs-2"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Expert Instructors</h4>
+                    <p class="text-muted">Learn from industry professionals with years of real-world experience</p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card-modern h-100 p-4 text-center">
+                    <div class="bg-success rounded-circle d-inline-flex align-items-center justify-content-center mb-4"
+                         style="width: 80px; height: 80px;">
+                        <i class="fas fa-clock text-white fs-2"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Flexible Learning</h4>
+                    <p class="text-muted">Study at your own pace, anytime and anywhere that suits you</p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card-modern h-100 p-4 text-center">
+                    <div class="bg-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-4"
+                         style="width: 80px; height: 80px;">
+                        <i class="fas fa-certificate text-white fs-2"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Get Certified</h4>
+                    <p class="text-muted">Earn industry-recognized certificates upon course completion</p>
+                </div>
+            </div>
+        </div>
+    </div>

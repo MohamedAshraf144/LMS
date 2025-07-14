@@ -10,8 +10,8 @@
                 <div class="auth-card">
                     <div class="auth-header">
                         <i class="fas fa-user fa-3x mb-3"></i>
-                        <h2 class="fw-bold mb-2">أهلاً بعودتك!</h2>
-                        <p class="mb-0 opacity-75">سجل دخولك لمتابعة رحلة التعلم</p>
+                        <h2 class="fw-bold mb-2">Welcome Back!</h2>
+                        <p class="mb-0 opacity-75">Sign in to continue your learning journey</p>
                     </div>
                     <div class="auth-body">
                         <form asp-action="Login" method="post" id="loginForm">
@@ -19,28 +19,28 @@
 
                             <div class="mb-4">
                                 <label asp-for="Email" class="form-label fw-semibold">
-                                    <i class="fas fa-envelope text-primary me-2"></i>البريد الإلكتروني
+                                    <i class="fas fa-envelope text-primary me-2"></i>Email Address
                                 </label>
                                 <div class="input-group">
                                     <span class="input-group-text">
                                         <i class="fas fa-envelope"></i>
                                     </span>
                                     <input asp-for="Email" type="email" class="form-control"
-                                           placeholder="أدخل بريدك الإلكتروني" autocomplete="email" required>
+                                           placeholder="Enter your email" autocomplete="email" required>
                                 </div>
                                 <span asp-validation-for="Email" class="text-danger small"></span>
                             </div>
 
                             <div class="mb-4">
                                 <label asp-for="Password" class="form-label fw-semibold">
-                                    <i class="fas fa-lock text-primary me-2"></i>كلمة المرور
+                                    <i class="fas fa-lock text-primary me-2"></i>Password
                                 </label>
                                 <div class="input-group">
                                     <span class="input-group-text">
                                         <i class="fas fa-lock"></i>
                                     </span>
                                     <input asp-for="Password" type="password" class="form-control"
-                                           placeholder="أدخل كلمة المرور" autocomplete="current-password" required>
+                                           placeholder="Enter your password" autocomplete="current-password" required>
                                     <button class="btn btn-outline-secondary" type="button" onclick="togglePassword(this)">
                                         <i class="fas fa-eye"></i>
                                     </button>
@@ -51,22 +51,22 @@
                             <div class="d-flex justify-content-between align-items-center mb-4">
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" id="rememberMe" name="rememberMe">
-                                    <label class="form-check-label" for="rememberMe">تذكرني</label>
+                                    <label class="form-check-label" for="rememberMe">Remember me</label>
                                 </div>
-                                <a href="@Url.Action("ForgotPassword", "Account")" class="text-primary text-decoration-none">
-                                    نسيت كلمة المرور؟
+                                <a href="#" class="text-primary text-decoration-none">
+                                    Forgot Password?
                                 </a>
                             </div>
 
                             <button type="submit" class="btn-primary-custom w-100 mb-4">
-                                <i class="fas fa-sign-in-alt me-2"></i>تسجيل الدخول
+                                <i class="fas fa-sign-in-alt me-2"></i>Sign In
                             </button>
 
                             <div class="text-center">
                                 <p class="mb-0">
-                                    ليس لديك حساب؟
+                                    Don't have an account?
                                     <a href="@Url.Action("Register", "Account")" class="text-primary fw-semibold text-decoration-none">
-                                        إنشاء حساب جديد
+                                        Create Account
                                     </a>
                                 </p>
                             </div>
@@ -76,23 +76,23 @@
 
                 <!-- Quick Login Demo -->
                 <div class="bg-light rounded-4 p-4 mt-4">
-                    <h6 class="fw-bold mb-3 text-center">تجربة سريعة</h6>
+                    <h6 class="fw-bold mb-3 text-center">Quick Demo</h6>
                     <div class="row g-2">
                         <div class="col-6">
                             <button type="button" class="btn btn-outline-primary w-100 btn-sm"
                                     onclick="quickLogin('admin@lms.com', 'admin123')">
-                                <i class="fas fa-user-shield me-1"></i>مدير
+                                <i class="fas fa-user-shield me-1"></i>Admin
                             </button>
                         </div>
                         <div class="col-6">
                             <button type="button" class="btn btn-outline-success w-100 btn-sm"
                                     onclick="quickLogin('instructor@lms.com', 'instructor123')">
-                                <i class="fas fa-chalkboard-teacher me-1"></i>مدرب
+                                <i class="fas fa-chalkboard-teacher me-1"></i>Instructor
                             </button>
                         </div>
                     </div>
                     <small class="text-muted d-block text-center mt-2">
-                        حسابات تجريبية للاختبار
+                        Demo accounts for testing
                     </small>
                 </div>
             </div>
@@ -104,34 +104,18 @@
     <partial name="_ValidationScriptsPartial" />
 
     <script>
-        // Toggle password visibility
-        function togglePassword(button) {
-            const input = button.parentElement.querySelector('input');
-            const icon = button.querySelector('i');
-
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
-            } else {
-                input.type = 'password';
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
-            }
-        }
-
         // Quick login function
         function quickLogin(email, password) {
             document.getElementById('Email').value = email;
             document.getElementById('Password').value = password;
 
             Swal.fire({
-                title: 'تسجيل دخول تجريبي',
-                text: 'سيتم تسجيل الدخول باستخدام بيانات تجريبية',
+                title: 'Demo Login',
+                text: 'You will be logged in using demo credentials',
                 icon: 'info',
                 showCancelButton: true,
-                confirmButtonText: 'متابعة',
-                cancelButtonText: 'إلغاء',
+                confirmButtonText: 'Continue',
+                cancelButtonText: 'Cancel',
                 confirmButtonColor: '#6366f1'
             }).then((result) => {
                 if (result.isConfirmed) {
@@ -143,7 +127,7 @@
         // Form submission with loading state
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             const submitBtn = this.querySelector('button[type="submit"]');
-            showLoading(submitBtn, 'جاري تسجيل الدخول...');
+            showLoading(submitBtn, 'Signing in...');
         });
 
         // Focus management
@@ -157,6 +141,7 @@
         // Enter key navigation
         document.getElementById('Email').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
+                e.preventDefault();
                 document.getElementById('Password').focus();
             }
         });

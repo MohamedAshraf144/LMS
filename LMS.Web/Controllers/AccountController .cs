@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿// LMS.Web/Controllers/AccountController.cs
+using Microsoft.AspNetCore.Mvc;
 using LMS.Core.Interfaces.Services;
 using LMS.Application.DTOs;
 using LMS.Core.Models;
@@ -45,6 +46,53 @@ namespace LMS.Web.Controllers
             }
 
             return View(model);
+        }
+
+        [HttpGet]
+        public IActionResult Register()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Register(CreateUserDto model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var existingUser = await _userService.GetUserByEmailAsync(model.Email);
+            if (existingUser != null)
+            {
+                ModelState.AddModelError("Email", "A user with this email already exists");
+                return View(model);
+            }
+
+            var user = new User
+            {
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                Email = model.Email,
+                Phone = model.Phone,
+                PasswordHash = model.Password,
+                Role = model.Role
+            };
+
+            try
+            {
+                var createdUser = await _userService.CreateUserAsync(user);
+
+                HttpContext.Session.SetString("UserId", createdUser.Id.ToString());
+                HttpContext.Session.SetString("UserName", $"{createdUser.FirstName} {createdUser.LastName}");
+                HttpContext.Session.SetString("UserRole", createdUser.Role.ToString());
+
+                TempData["Success"] = "Registration successful! Welcome to Learning Hub!";
+                return RedirectToAction("Index", "Home");
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "An error occurred during registration. Please try again.");
+                return View(model);
+            }
         }
 
         public IActionResult Logout()
