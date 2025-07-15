@@ -1,0 +1,51 @@
+@{
+    ViewData["Title"] = "Enter Test Card";
+    var courseId = ViewBag.CourseId;
+}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white text-center">
+                    <h4 class="mb-0">Enter Test Card Details</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="EnterTestCard" asp-controller="Payment" method="post">
+                        <input type="hidden" name="courseId" value="@courseId" />
+                        <div class="mb-3">
+                            <label class="form-label">Card Number</label>
+                            <input type="text" name="cardNumber" class="form-control" placeholder="5123 4567 8901 2346" required maxlength="19" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Cardholder Name</label>
+                            <input type="text" name="cardName" class="form-control" placeholder="Test Account" required />
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label class="form-label">Expiry Month</label>
+                                <input type="text" name="expiryMonth" class="form-control" placeholder="12" required maxlength="2" />
+                            </div>
+                            <div class="col">
+                                <label class="form-label">Expiry Year</label>
+                                <input type="text" name="expiryYear" class="form-control" placeholder="25" required maxlength="2" />
+                            </div>
+                            <div class="col">
+                                <label class="form-label">CVV</label>
+                                <input type="text" name="cvv" class="form-control" placeholder="123" required maxlength="4" />
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="fas fa-credit-card me-2"></i>Simulate Payment
+                        </button>
+                    </form>
+                    <div class="alert alert-info mt-4">
+                        <strong>Test Card:</strong> 5123 4567 8901 2346<br />
+                        <strong>Name:</strong> Test Account<br />
+                        <strong>Expiry:</strong> 12/25<br />
+                        <strong>CVV:</strong> 123
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 
