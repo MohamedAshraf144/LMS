@@ -39,7 +39,7 @@ namespace LMS.Application.Services
         public async Task<Course> CreateCourseAsync(Course course)
         {
             course.CreatedDate = DateTime.UtcNow;
-            course.Status = CourseStatus.Draft;
+            course.Status = CourseStatus.Published;
             return await _courseRepository.AddAsync(course);
         }
 

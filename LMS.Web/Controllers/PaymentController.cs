@@ -287,6 +287,37 @@ namespace LMS.Web.Controllers
         // أضف هذا Method إلى LMS.Web/Controllers/PaymentController.cs
 
         [HttpGet]
+        public IActionResult EnterTestCard(int courseId)
+        {
+            ViewBag.CourseId = courseId;
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EnterTestCard(int courseId, string cardNumber, string cardName, string expiryMonth, string expiryYear, string cvv)
+        {
+            // يمكنك إضافة تحقق من صحة البيانات هنا إذا أردت
+            var userIdString = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                TempData["Warning"] = "Please login to make a payment";
+                return RedirectToAction("Login", "Account");
+            }
+            var userId = int.Parse(userIdString);
+            var course = await _courseService.GetCourseByIdAsync(courseId);
+            if (course?.Price != null)
+            {
+                var payment = await _paymentService.CreatePaymentAsync(userId, courseId, course.Price.Value);
+                await _paymentService.CompletePaymentAsync(payment.Id, $"TESTCARD_{payment.Id}");
+                TempData["Success"] = "Test card payment completed successfully!";
+                return RedirectToAction("Success", new { payment_id = payment.Id });
+            }
+            TempData["Error"] = "Course not found or has no price";
+            return RedirectToAction("PayForCourse", new { courseId });
+        }
+
+        [HttpGet]
         public IActionResult MockPayment(string token)
         {
             ViewBag.Token = token;
