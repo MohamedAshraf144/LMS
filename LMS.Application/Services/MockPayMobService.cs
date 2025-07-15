@@ -69,5 +69,11 @@ namespace LMS.Application.Services
 
             return Task.FromResult<PaymentTransaction?>(mockTransaction);
         }
+
+        public Task<string> StartPaymentAsync(User user, Course course)
+        {
+            // تعيد رابط وهمي أو رسالة توضح أنها محاكاة فقط
+            return Task.FromResult("/Payment/MockPayment?token=mocktoken");
+        }
     }
 }

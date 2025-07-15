@@ -217,7 +217,8 @@ namespace LMS.Application.Services
         {
             try
             {
-                var paymentUrl = $"https://accept.paymob.com/api/acceptance/iframes/{_config.IframeId}?payment_token={paymentToken}";
+                // استخدم IframeId الرسمي الجديد من Paymob
+                var paymentUrl = $"https://accept.paymob.com/api/acceptance/iframes/939530?payment_token={paymentToken}";
                 _logger.LogInformation("Generated PayMob payment URL: {PaymentUrl}", paymentUrl);
                 return Task.FromResult(paymentUrl);
             }
@@ -226,6 +227,22 @@ namespace LMS.Application.Services
                 _logger.LogError(ex, "Error generating PayMob payment URL");
                 throw;
             }
+        }
+
+        public async Task<string> StartPaymentAsync(User user, Course course)
+        {
+            // 1. Auth Token
+            var authToken = await GetAuthTokenAsync();
+
+            // 2. Create Order
+            var orderId = await CreateOrderAsync(authToken, course.Price ?? 0, course.Description ?? "Course", $"course-{course.Id}-user-{user.Id}");
+
+            // 3. Payment Key
+            var paymentKey = await GetPaymentTokenAsync(authToken, orderId, course.Price ?? 0, user);
+
+            // 4. Payment URL
+            var paymentUrl = await GetPaymentUrlAsync(paymentKey);
+            return paymentUrl;
         }
 
         public Task<bool> VerifyWebhookAsync(string payload, string signature)

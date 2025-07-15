@@ -16,5 +16,6 @@ namespace LMS.Core.Interfaces.Services
         Task<string> GetPaymentUrlAsync(string paymentToken);
         Task<bool> VerifyWebhookAsync(string payload, string signature);
         Task<PaymentTransaction?> ProcessWebhookAsync(string payload);
+        Task<string> StartPaymentAsync(User user, Course course);
     }
 }

@@ -14,19 +14,25 @@ namespace LMS.Web.Controllers
         private readonly ILogger<PaymentController> _logger;
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _configuration;
+        private readonly IUserService _userService; // Added for user details
+        private readonly IPayMobService _payMobService; // Added for PayMob service
 
         public PaymentController(
             IPaymentService paymentService,
             ICourseService courseService,
             ILogger<PaymentController> logger,
             HttpClient httpClient,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IUserService userService,
+            IPayMobService payMobService) // Added userService to constructor
         {
             _paymentService = paymentService;
             _courseService = courseService;
             _logger = logger;
             _httpClient = httpClient;
             _configuration = configuration;
+            _userService = userService; // Initialize userService
+            _payMobService = payMobService; // Initialize PayMob service
         }
 
         [HttpGet]
@@ -92,80 +98,18 @@ namespace LMS.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> InitiatePayment(int courseId)
         {
-            try
-            {
-                _logger.LogInformation("Initiating payment for course {CourseId}", courseId);
+            var userIdString = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(userIdString))
+                return RedirectToAction("Login", "Account");
 
-                var userIdString = HttpContext.Session.GetString("UserId");
-                if (string.IsNullOrEmpty(userIdString))
-                {
-                    _logger.LogWarning("User not logged in when trying to initiate payment");
-                    TempData["Warning"] = "Please login to make a payment";
-                    return RedirectToAction("Login", "Account");
-                }
+            var userId = int.Parse(userIdString);
+            var course = await _courseService.GetCourseByIdAsync(courseId);
+            if (course == null || course.Price == null || course.Price <= 0)
+                return RedirectToAction("Details", "Courses", new { id = courseId });
 
-                var userId = int.Parse(userIdString);
-                _logger.LogInformation("User {UserId} initiating payment for course {CourseId}", userId, courseId);
-
-                // استخدام API بدلاً من الخدمة المباشرة
-                var apiBaseUrl = _configuration["ApplicationSettings:ApiBaseUrl"] ?? "https://localhost:7278/api";
-                var apiUrl = $"{apiBaseUrl}/Payments/initiate";
-
-                var requestData = new
-                {
-                    courseId = courseId,
-                    userId = userId
-                };
-
-                var json = JsonSerializer.Serialize(requestData);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                _logger.LogInformation("Calling API: {ApiUrl}", apiUrl);
-
-                var response = await _httpClient.PostAsync(apiUrl, content);
-                var responseContent = await response.Content.ReadAsStringAsync();
-
-                _logger.LogInformation("API Response Status: {StatusCode}, Content: {Content}",
-                    response.StatusCode, responseContent);
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    _logger.LogError("API call failed with status {StatusCode}: {Content}",
-                        response.StatusCode, responseContent);
-
-                    TempData["Error"] = $"Payment service error: {response.StatusCode}";
-                    return RedirectToAction("PayForCourse", new { courseId });
-                }
-
-                var paymentResponse = JsonSerializer.Deserialize<PaymentInitiationResponse>(responseContent, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
-
-                if (paymentResponse?.PaymentUrl == null)
-                {
-                    _logger.LogError("API returned null payment URL");
-                    TempData["Error"] = "Payment service returned invalid response";
-                    return RedirectToAction("PayForCourse", new { courseId });
-                }
-
-                _logger.LogInformation("Payment URL received: {PaymentUrl}", paymentResponse.PaymentUrl);
-
-                // إعادة توجيه إلى رابط الدفع
-                return Redirect(paymentResponse.PaymentUrl);
-            }
-            catch (HttpRequestException httpEx)
-            {
-                _logger.LogError(httpEx, "Network error while calling payment API for course {CourseId}", courseId);
-                TempData["Error"] = "Network error. Please check your connection and try again.";
-                return RedirectToAction("PayForCourse", new { courseId });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Unexpected error initiating payment for course {CourseId}: {Message}", courseId, ex.Message);
-                TempData["Error"] = $"An error occurred while initiating payment: {ex.Message}";
-                return RedirectToAction("PayForCourse", new { courseId });
-            }
+            var user = await _userService.GetUserByIdAsync(userId);
+            var paymentUrl = await _payMobService.StartPaymentAsync(user, course);
+            return Redirect(paymentUrl);
         }
 
         [HttpGet]
