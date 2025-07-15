@@ -311,7 +311,8 @@ namespace LMS.Web.Controllers
                 var payment = await _paymentService.CreatePaymentAsync(userId, courseId, course.Price.Value);
                 await _paymentService.CompletePaymentAsync(payment.Id, $"TESTCARD_{payment.Id}");
                 TempData["Success"] = "Test card payment completed successfully!";
-                return RedirectToAction("Success", new { payment_id = payment.Id });
+                // إعادة التوجيه مباشرة إلى صفحة تفاصيل الكورس
+                return RedirectToAction("Details", "Courses", new { id = courseId });
             }
             TempData["Error"] = "Course not found or has no price";
             return RedirectToAction("PayForCourse", new { courseId });
