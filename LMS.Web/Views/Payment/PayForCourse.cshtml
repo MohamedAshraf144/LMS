@@ -1,162 +1,611 @@
 ﻿@model object
 @{
-    ViewData["Title"] = "Test Payment";
+    ViewData["Title"] = "Pay for Course";
     var course = ViewBag.Course as LMS.Core.Models.Course;
 }
 
-<div class="auth-container">
+<style>
+    :root {
+        --primary: #6366f1;
+        --primary-dark: #4f46e5;
+        --secondary: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --success: #22c55e;
+        --dark: #1e293b;
+        --light: #f8fafc;
+        --border: #e2e8f0;
+        --shadow: 0 10px 40px rgba(0,0,0,0.1);
+        --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --gradient-success: linear-gradient(135deg, #10b981 0%, #047857 100%);
+    }
+
+    .payment-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 2rem 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .payment-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="white" opacity="0.1"/></svg>') repeat;
+        animation: float 20s ease-in-out infinite;
+    }
+
+    keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+    }
+
+    .payment-card {
+        background: white;
+        border-radius: 32px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        border: none;
+        overflow: hidden;
+        position: relative;
+        z-index: 2;
+        backdrop-filter: blur(20px);
+        animation: slideUp 0.8s ease-out;
+    }
+
+    keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .payment-header {
+        background: var(--gradient);
+        color: white;
+        padding: 3rem 2rem 2rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .payment-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: repeating-linear-gradient(
+            45deg,
+            rgba(255,255,255,0.1) 0px,
+            rgba(255,255,255,0.1) 1px,
+            transparent 1px,
+            transparent 20px
+        );
+        animation: shimmer 3s ease-in-out infinite;
+    }
+
+    keyframes shimmer {
+        0% { transform: translateX(-100%) translateY(-100%); }
+        100% { transform: translateX(100%) translateY(100%); }
+    }
+
+    .payment-header .icon-container {
+        width: 100px;
+        height: 100px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(255,255,255,0.3);
+        position: relative;
+        z-index: 2;
+    }
+
+    .payment-body {
+        padding: 2.5rem;
+        position: relative;
+    }
+
+    .course-summary {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        border-radius: 24px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(99, 102, 241, 0.1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .course-summary::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--gradient);
+    }
+
+    .course-image-container {
+        position: relative;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .course-image-container:hover {
+        transform: scale(1.05);
+    }
+
+    .course-image-placeholder {
+        background: var(--gradient);
+        height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+    }
+
+    .course-features {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+    }
+
+    .feature-badge {
+        background: rgba(99, 102, 241, 0.1);
+        color: var(--primary);
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .feature-badge:hover {
+        background: rgba(99, 102, 241, 0.2);
+        transform: translateY(-2px);
+    }
+
+    .pricing-section {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+        border: 2px solid rgba(34, 197, 94, 0.1);
+        position: relative;
+    }
+
+    .pricing-section::before {
+        content: '💰';
+        position: absolute;
+        top: -15px;
+        right: 20px;
+        background: white;
+        padding: 0 10px;
+        font-size: 1.5rem;
+    }
+
+    .price-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .price-row:last-child {
+        border-bottom: none;
+        font-weight: 700;
+        font-size: 1.2rem;
+        color: var(--success);
+    }
+
+    .payment-button {
+        background: var(--gradient-success);
+        border: none;
+        padding: 1.2rem 2rem;
+        border-radius: 16px;
+        font-weight: 700;
+        color: white;
+        transition: all 0.3s ease;
+        font-size: 1.1rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+    }
+
+    .payment-button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.6s ease;
+    }
+
+    .payment-button:hover::before {
+        left: 100%;
+    }
+
+    .payment-button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 35px rgba(16, 185, 129, 0.4);
+    }
+
+    .payment-button:active {
+        transform: translateY(-1px);
+    }
+
+    .security-info {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        margin: 2rem 0;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        position: relative;
+    }
+
+    .security-badges {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .security-badge {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        border: 1px solid var(--border);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .security-badge::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--gradient);
+    }
+
+    .security-badge:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+
+    .security-badge i {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .back-button {
+        background: transparent;
+        border: 2px solid var(--border);
+        padding: 1rem 2rem;
+        border-radius: 16px;
+        color: var(--dark);
+        font-weight: 600;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .back-button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: var(--light);
+        transition: left 0.3s ease;
+        z-index: -1;
+    }
+
+    .back-button:hover::before {
+        left: 0;
+    }
+
+    .back-button:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+        transform: translateY(-2px);
+    }
+
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .loading-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .loading-spinner {
+        width: 60px;
+        height: 60px;
+        border: 4px solid rgba(255,255,255,0.3);
+        border-top: 4px solid white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .pulse {
+        animation: pulse 2s infinite;
+    }
+
+    keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+
+    /* Responsive Design */
+    media (max-width: 768px) {
+        .payment-container {
+            padding: 1rem 0;
+        }
+        
+        .payment-header {
+            padding: 2rem 1rem 1.5rem;
+        }
+        
+        .payment-body {
+            padding: 1.5rem;
+        }
+        
+        .course-summary {
+            padding: 1.5rem;
+        }
+        
+        .security-badges {
+            grid-template-columns: 1fr;
+        }
+        
+        .course-features {
+            justify-content: center;
+        }
+    }
+
+    /* Success Animation */
+    .success-checkmark {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: block;
+        stroke-width: 2;
+        stroke: #22c55e;
+        stroke-miterlimit: 10;
+        margin: 10% auto;
+        box-shadow: inset 0px 0px 0px #22c55e;
+        animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+    }
+
+    .success-checkmark__circle {
+        stroke-dasharray: 166;
+        stroke-dashoffset: 166;
+        stroke-width: 2;
+        stroke-miterlimit: 10;
+        stroke: #22c55e;
+        fill: none;
+        animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+    }
+
+    .success-checkmark__check {
+        transform-origin: 50% 50%;
+        stroke-dasharray: 48;
+        stroke-dashoffset: 48;
+        animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+    }
+
+    keyframes stroke {
+        100% { stroke-dashoffset: 0; }
+    }
+
+    keyframes scale {
+        0%, 100% { transform: none; }
+        50% { transform: scale3d(1.1, 1.1, 1); }
+    }
+
+    keyframes fill {
+        100% { box-shadow: inset 0px 0px 0px 30px #22c55e; }
+    }
+</style>
+
+<div class="payment-container">
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-lg-8">
+            <div class="col-lg-8 col-xl-7">
                 <div class="payment-card">
                     <div class="payment-header">
-                        <i class="fas fa-credit-card fa-3x mb-3"></i>
-                        <h2 class="fw-bold mb-2">Course Payment</h2>
-                        <p class="mb-0 opacity-75">Complete payment to get full access to the course</p>
+                        <div class="icon-container pulse">
+                            <i class="fas fa-credit-card fa-3x"></i>
+                        </div>
+                        <h2 class="fw-bold mb-2">Secure Course Payment</h2>
+                        <p class="mb-0 opacity-90">Complete your purchase to unlock premium learning content</p>
                     </div>
+                    
                     <div class="payment-body">
                         @if (course != null)
                         {
-                            <!-- Course Info -->
-                            <div class="payment-summary">
-                                <h5 class="fw-bold mb-3">
-                                    <i class="fas fa-shopping-cart me-2"></i>Order Summary
+                            <!-- Course Summary -->
+                            <div class="course-summary">
+                                <h5 class="fw-bold mb-4 d-flex align-items-center">
+                                    <i class="fas fa-shopping-cart me-2 text-primary"></i>
+                                    Order Summary
                                 </h5>
+                                
                                 <div class="row align-items-center">
-                                    <div class="col-md-3">
-                                        @if (!string.IsNullOrEmpty(course.ImageUrl))
-                                        {
-                                            <img src="@course.ImageUrl" alt="@course.Title" class="img-fluid rounded-3">
-                                        }
-                                        else
-                                        {
-                                            <div class="bg-primary rounded-3 d-flex align-items-center justify-content-center" style="height: 100px;">
-                                                <i class="fas fa-book fa-2x text-white"></i>
-                                            </div>
-                                        }
+                                    <div class="col-md-4">
+                                        <div class="course-image-container">
+                                            @if (!string.IsNullOrEmpty(course.ImageUrl))
+                                            {
+                                                <img src="@course.ImageUrl" alt="@course.Title" class="img-fluid rounded-3">
+                                            }
+                                            else
+                                            {
+                                                <div class="course-image-placeholder">
+                                                    <i class="fas fa-graduation-cap fa-3x text-white"></i>
+                                                </div>
+                                            }
+                                        </div>
                                     </div>
-                                    <div class="col-md-9">
-                                        <h5 class="fw-bold mb-2">@course.Title</h5>
-                                        <p class="text-muted mb-3">@course.Description</p>
-                                        <div class="row g-3">
-                                            <div class="col-sm-4">
-                                                <div class="d-flex align-items-center">
-                                                    <i class="fas fa-clock text-primary me-2"></i>
-                                                    <span class="small">@course.Duration hours</span>
-                                                </div>
+                                    
+                                    <div class="col-md-8">
+                                        <h5 class="fw-bold mb-3 text-dark">@course.Title</h5>
+                                        <p class="text-muted mb-3">@(course.Description ?? "Comprehensive course designed to advance your skills and knowledge")</p>
+                                        
+                                        <div class="course-features">
+                                            <div class="feature-badge">
+                                                <i class="fas fa-clock me-1"></i>
+                                                @course.Duration Hours
                                             </div>
-                                            <div class="col-sm-4">
-                                                <div class="d-flex align-items-center">
-                                                    <i class="fas fa-signal text-primary me-2"></i>
-                                                    <span class="small">@course.Level.ToString()</span>
-                                                </div>
+                                            <div class="feature-badge">
+                                                <i class="fas fa-signal me-1"></i>
+                                                @course.Level.ToString()
                                             </div>
-                                            <div class="col-sm-4">
-                                                <div class="d-flex align-items-center">
-                                                    <i class="fas fa-tags text-primary me-2"></i>
-                                                    <span class="small">@(course.Category?.Name ?? "General")</span>
-                                                </div>
+                                            <div class="feature-badge">
+                                                <i class="fas fa-tags me-1"></i>
+                                                @(course.Category?.Name ?? "General")
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+                            </div>
 
-                                <!-- Pricing -->
-                                <hr class="my-4">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <span class="fw-semibold">Course Price:</span>
-                                    <span class="h4 fw-bold text-success mb-0">$@course.Price?.ToString("F0")</span>
+                            <!-- Pricing Section -->
+                            <div class="pricing-section">
+                                <h6 class="fw-bold mb-3 text-success">💰 Pricing Details</h6>
+                                
+                                <div class="price-row">
+                                    <span class="fw-semibold">Course Fee:</span>
+                                    <span class="fw-bold text-success">${@course.Price?.ToString("F0")}</span>
                                 </div>
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <span class="fw-semibold">Tax:</span>
+                                
+                                <div class="price-row">
+                                    <span class="fw-semibold">Platform Fee:</span>
                                     <span class="text-muted">Included</span>
                                 </div>
-                                <hr>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="h5 fw-bold">Total:</span>
-                                    <span class="h3 fw-bold text-primary">$@course.Price?.ToString("F0")</span>
+                                
+                                <div class="price-row">
+                                    <span class="fw-semibold">Taxes & Fees:</span>
+                                    <span class="text-muted">Included</span>
+                                </div>
+                                
+                                <div class="price-row">
+                                    <span class="h5 fw-bold">Total Amount:</span>
+                                    <span class="h4 fw-bold text-success">${@course.Price?.ToString("F0")}</span>
                                 </div>
                             </div>
 
-                            <!-- Payment Methods -->
-                            <div class="mb-4">
-                                <h5 class="fw-bold mb-3">
-                                    <i class="fas fa-payment-card me-2"></i>Payment Method
-                                </h5>
-                                <div class="bg-light rounded-3 p-3">
-                                    <div class="d-flex align-items-center justify-content-between">
-                                        <div class="d-flex align-items-center">
-                                            <i class="fas fa-credit-card text-primary fs-4 me-3"></i>
-                                            <div>
-                                                <h6 class="mb-0 fw-bold">PayMob - Secure Payment</h6>
-                                                <small class="text-muted">Visa, Mastercard, Mobile Wallets</small>
-                                            </div>
-                                        </div>
-                                        <i class="fas fa-shield-alt text-success fs-4"></i>
-                                    </div>
+                            <!-- Payment Form -->
+                            <form asp-action="InitiatePayment" method="post" id="paymentForm">
+                                <input type="hidden" name="courseId" value="@course.Id" />
+                                
+                                <div class="d-grid gap-3 mb-4">
+                                    <button type="submit" class="payment-button btn-lg w-100" id="payNowBtn">
+                                        <i class="fas fa-shield-alt me-2"></i>
+                                        Pay Securely with PayMob - $@course.Price?.ToString("F0")
+                                    </button>
+                                    
+                                    <a href="@Url.Action("Details", "Courses", new { id = course.Id })" 
+                                       class="back-button btn-lg text-center text-decoration-none">
+                                        <i class="fas fa-arrow-left me-2"></i>
+                                        Return to Course
+                                    </a>
                                 </div>
-                            </div>
+                            </form>
 
-                            <!-- Test Mode Alert -->
-                            <div class="alert alert-warning border-0">
-                                <div class="d-flex align-items-center">
-                                    <i class="fas fa-exclamation-triangle me-3"></i>
+                            <!-- Security Information -->
+                            <div class="security-info">
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="fas fa-shield-alt text-success fs-3 me-3"></i>
                                     <div>
-                                        <strong>Test Mode:</strong>
-                                        <ul class="mb-0 mt-2">
-                                            <li>Click "Test Payment" to simulate a successful payment</li>
-                                            <li>Click "Live Payment" to use actual PayMob integration</li>
-                                            <li>Check browser console for detailed logs</li>
-                                        </ul>
+                                        <h6 class="fw-bold mb-1">Secure Payment Guarantee</h6>
+                                        <small class="text-muted">Your payment information is protected with bank-level security</small>
                                     </div>
                                 </div>
-                            </div>
-
-                            <!-- Payment Buttons -->
-                            <div class="d-grid gap-3">
-                                <!-- Test Payment Button -->
-                                <a href="@Url.Action("TestPayment", "Payment", new { courseId = course.Id })" 
-                                   class="btn btn-warning btn-lg">
-                                    <i class="fas fa-flask me-2"></i>
-                                    Test Payment - $@course.Price?.ToString("F0")
-                                </a>
-
-                                <!-- Live Payment Button -->
-                                <a href="@Url.Action("EnterTestCard", "Payment", new { courseId = course.Id })" class="btn-primary-custom btn-lg w-100">
-                                    <i class="fas fa-credit-card me-2"></i>
-                                    Live Payment - $@course.Price?.ToString("F0")
-                                </a>
-
-                                <a href="@Url.Action("Details", "Courses", new { id = course.Id })" 
-                                   class="btn btn-outline-secondary btn-lg">
-                                    <i class="fas fa-arrow-left me-2"></i>Back to Course
-                                </a>
-                            </div>
-
-                            <!-- Debug Information -->
-                            <div class="mt-4">
-                                <details class="bg-light rounded-3 p-3">
-                                    <summary class="fw-bold mb-2">Debug Information</summary>
-                                    <div class="small">
-                                        <p><strong>Course ID:</strong> @course.Id</p>
-                                        <p><strong>Price:</strong> @course.Price</p>
-                                        <p><strong>User Session:</strong> @Context.Session.GetString("UserId")</p>
-                                        <p><strong>User Name:</strong> @Context.Session.GetString("UserName")</p>
-                                        <p><strong>Current URL:</strong> @Context.Request.Path@Context.Request.QueryString</p>
-                                    </div>
-                                </details>
+                                
+                                <ul class="mb-0 list-unstyled">
+                                    <li class="mb-2">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        Payment processed securely through PayMob
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        Supports Visa, Mastercard, and mobile wallets
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        Instant course access after payment
+                                    </li>
+                                    <li class="mb-0">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        30-day money-back guarantee
+                                    </li>
+                                </ul>
                             </div>
 
                             <!-- Security Badges -->
-                            <div class="security-badges mt-4">
+                            <div class="security-badges">
                                 <div class="security-badge">
-                                    <i class="fas fa-shield-alt text-success me-2"></i>100% Secure
+                                    <i class="fas fa-lock text-primary"></i>
+                                    <div class="fw-bold small">SSL Encrypted</div>
+                                    <div class="text-muted" style="font-size: 0.8rem;">Bank Level Security</div>
                                 </div>
+                                
                                 <div class="security-badge">
-                                    <i class="fas fa-lock text-primary me-2"></i>SSL Encrypted
+                                    <i class="fas fa-shield-alt text-success"></i>
+                                    <div class="fw-bold small">100% Secure</div>
+                                    <div class="text-muted" style="font-size: 0.8rem;">Verified Payment</div>
                                 </div>
+                                
                                 <div class="security-badge">
-                                    <i class="fas fa-undo text-warning me-2"></i>Money-back Guarantee
+                                    <i class="fas fa-undo text-warning"></i>
+                                    <div class="fw-bold small">Money Back</div>
+                                    <div class="text-muted" style="font-size: 0.8rem;">30 Day Guarantee</div>
                                 </div>
                             </div>
                         }
@@ -164,7 +613,7 @@
                         {
                             <div class="alert alert-danger">
                                 <i class="fas fa-exclamation-triangle me-2"></i>
-                                Error loading course data. Please try again.
+                                <strong>Error:</strong> Unable to load course information. Please try again.
                             </div>
                         }
                     </div>
@@ -174,36 +623,87 @@
     </div>
 </div>
 
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="text-center text-white">
+        <div class="loading-spinner mb-3"></div>
+        <h5>Processing Payment...</h5>
+        <p class="mb-0">Please wait while we redirect you to the secure payment gateway</p>
+    </div>
+</div>
+
 @section Scripts {
     <script>
-        // Enhanced error logging
-        window.addEventListener('error', function(e) {
-            console.error('JavaScript Error:', e.error);
-        });
+        document.addEventListener('DOMContentLoaded', function() {
+            const paymentForm = document.getElementById('paymentForm');
+            const payNowBtn = document.getElementById('payNowBtn');
+            const loadingOverlay = document.getElementById('loadingOverlay');
 
-        // Form submission logging
-        document.querySelector('form')?.addEventListener('submit', function(e) {
-            console.log('Form submitted:', this.action);
-            const submitBtn = this.querySelector('button[type="submit"]');
-            if (submitBtn) {
-                console.log('Button clicked:', submitBtn.textContent);
-                showLoading(submitBtn, 'Processing payment...');
-            }
-        });
+            paymentForm.addEventListener('submit', function(e) {
+                // Show loading overlay
+                loadingOverlay.classList.add('active');
+                
+                // Disable button and show loading state
+                payNowBtn.disabled = true;
+                payNowBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+                
+                // Show confirmation dialog
+                setTimeout(() => {
+                    const confirmed = confirm(
+                        '🔒 Secure Payment Confirmation\n\n' +
+                        '• You will be redirected to PayMob secure payment gateway\n' +
+                        '• Amount: $@course.Price?.ToString("F0")\n' +
+                        '• Course: @course.Title\n\n' +
+                        'Continue with secure payment?'
+                    );
+                    
+                    if (!confirmed) {
+                        e.preventDefault();
+                        loadingOverlay.classList.remove('active');
+                        payNowBtn.disabled = false;
+                        payNowBtn.innerHTML = '<i class="fas fa-shield-alt me-2"></i>Pay Securely with PayMob - $@course.Price?.ToString("F0")';
+                    }
+                }, 100);
+            });
 
-        function showLoading(button, text = 'Loading...') {
-            const originalText = button.innerHTML;
-            button.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>${text}`;
-            button.disabled = true;
-            button.dataset.originalText = originalText;
-        }
+            // Add entrance animations
+            const elementsToAnimate = document.querySelectorAll('.course-summary, .pricing-section, .security-info');
+            elementsToAnimate.forEach((element, index) => {
+                element.style.animationDelay = `${index * 0.2}s`;
+                element.classList.add('slideUp');
+            });
 
-        // Log session information for debugging
-        console.log('Debug Info:', {
-            courseId: '@course?.Id',
-            coursePrice: '@course?.Price',
-            userSession: '@Context.Session.GetString("UserId")',
-            userName: '@Context.Session.GetString("UserName")'
+            // Enhanced error logging
+            window.addEventListener('error', function(e) {
+                console.error('JavaScript Error:', e.error);
+            });
+
+            // Log session information for debugging
+            console.log('🔍 Payment Debug Info:', {
+                courseId: '@course?.Id',
+                coursePrice: '@course?.Price',
+                userSession: '@Context.Session.GetString("UserId")',
+                userName: '@Context.Session.GetString("UserName")',
+                timestamp: new Date().toISOString()
+            });
+
+            // Add hover effects to interactive elements
+            document.querySelectorAll('.payment-button, .back-button').forEach(button => {
+                button.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-3px)';
+                });
+                
+                button.addEventListener('mouseleave', function() {
+                    if (!this.disabled) {
+                        this.style.transform = 'translateY(0)';
+                    }
+                });
+            });
+
+            // Auto-hide loading overlay if page is refreshed/reloaded
+            window.addEventListener('beforeunload', function() {
+                loadingOverlay.classList.remove('active');
+            });
         });
     </script>
 }

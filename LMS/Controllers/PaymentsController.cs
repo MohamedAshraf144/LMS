@@ -1,4 +1,5 @@
 ﻿using LMS.Application.DTOs;
+using LMS.Application.Services;
 using LMS.Core.Interfaces.Services;
 using LMS.Core.Models.PayMob;
 using Microsoft.AspNetCore.Authorization;
@@ -16,67 +17,70 @@ namespace LMS.API.Controllers
         private readonly ICourseService _courseService;
         private readonly IPayMobService _payMobService;
         private readonly ILogger<PaymentsController> _logger;
+        private readonly IUserService _userService;
 
         public PaymentsController(
             IPaymentService paymentService,
             ICourseService courseService,
-            IPayMobService payMobService,
+            IPayMobService payMobService, IUserService userService,
             ILogger<PaymentsController> logger)
+
         {
             _paymentService = paymentService;
             _courseService = courseService;
             _payMobService = payMobService;
             _logger = logger;
+            _userService = userService;
         }
 
 
-        [HttpPost("initiate")]
-        public async Task<IActionResult> InitiatePayment([FromBody] CreatePaymentDtoWithUser dto)
+        [HttpPost]
+        public async Task<IActionResult> InitiatePayment(int courseId)
         {
+            var userIdString = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                
+                return RedirectToAction("Login", "Account");
+            }
+
+            var userId = int.Parse(userIdString);
+
             try
             {
-                if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
-
-                var userId = dto.UserId;
-                _logger.LogInformation("Initiating payment for user {UserId}, course {CourseId}", userId, dto.CourseId);
-
-                // Get course details
-                var course = await _courseService.GetCourseByIdAsync(dto.CourseId);
+                var course = await _courseService.GetCourseByIdAsync(courseId);
                 if (course == null)
-                    return NotFound("Course not found");
+                {
+                   
+                    return RedirectToAction("Index", "Courses");
+                }
 
                 if (course.Price == null || course.Price <= 0)
-                    return BadRequest("Course is free or price not set");
-
-                // تحويل من USD إلى EGP قبل حفظ payment
-                var priceEGP = course.Price.Value * 30; // تحديث السعر حسب السوق
-
-                _logger.LogInformation("Course price: ${Price} USD = {PriceEGP} EGP", course.Price.Value, priceEGP);
-
-                // Create payment record بالسعر المحول
-                var payment = await _paymentService.CreatePaymentAsync(userId, dto.CourseId, priceEGP);
-
-                // Initiate PayMob payment
-                var paymentUrl = await _paymentService.InitiatePaymentAsync(payment.Id);
-
-                var response = new PaymentInitiationResponse
                 {
-                    PaymentId = payment.Id,
-                    PaymentUrl = paymentUrl,
-                    Message = "Payment initiated successfully"
-                };
+                    
+                    return RedirectToAction("Details", "Courses", new { id = courseId });
+                }
 
-                return Ok(response);
+                var user = await _userService.GetUserByIdAsync(userId);
+                if (user == null)
+                {
+                    
+                    return RedirectToAction("Login", "Account");
+                }
+
+                _logger.LogInformation("Initiating PayMob payment for user {UserId}, course {CourseId}", userId, courseId);
+
+                // Use real PayMob service to start payment
+                var paymentUrl = await _payMobService.StartPaymentAsync(user, course);
+
+                _logger.LogInformation("PayMob payment URL generated successfully, redirecting user");
+                return Redirect(paymentUrl);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error initiating payment for course {CourseId}", dto.CourseId);
-                return StatusCode(500, new
-                {
-                    Message = "An error occurred while initiating payment",
-                    Error = ex.Message
-                });
+                _logger.LogError(ex, "Error initiating PayMob payment for course {CourseId}", courseId);
+               
+                return RedirectToAction("PayForCourse", new { courseId });
             }
         }
 

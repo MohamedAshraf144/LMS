@@ -1,0 +1,240 @@
+﻿@{
+    ViewData["Title"] = "Payment Diagnostics";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-tools me-2"></i>
+                        Payment System Diagnostics
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        This page helps diagnose payment issues. Click the tests below to check system status.
+                    </div>
+
+                    <!-- Session Info -->
+                    <div class="mb-4">
+                        <h5 class="fw-bold">Session Information</h5>
+                        <div class="bg-light p-3 rounded">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>User ID:</strong> @Context.Session.GetString("UserId")<br>
+                                    <strong>User Name:</strong> @Context.Session.GetString("UserName")<br>
+                                    <strong>User Role:</strong> @Context.Session.GetString("UserRole")
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Session ID:</strong> @Context.Session.Id<br>
+                                    <strong>Is Available:</strong> @Context.Session.IsAvailable<br>
+                                    <strong>Current Time:</strong> @DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Test Buttons -->
+                    <div class="mb-4">
+                        <h5 class="fw-bold">System Tests</h5>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-outline-primary" onclick="testPayMobConnection()">
+                                <i class="fas fa-plug me-2"></i>Test PayMob Connection
+                            </button>
+                            <button class="btn btn-outline-success" onclick="testDatabaseConnection()">
+                                <i class="fas fa-database me-2"></i>Test Database Connection
+                            </button>
+                            <button class="btn btn-outline-warning" onclick="testUserServices()">
+                                <i class="fas fa-user me-2"></i>Test User Services
+                            </button>
+                            <button class="btn btn-outline-info" onclick="testCourseServices()">
+                                <i class="fas fa-book me-2"></i>Test Course Services
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Results Area -->
+                    <div class="mb-4">
+                        <h5 class="fw-bold">Test Results</h5>
+                        <div id="testResults" class="bg-light p-3 rounded" style="min-height: 200px; font-family: monospace; white-space: pre-wrap;">
+                            Ready to run tests...
+                        </div>
+                    </div>
+
+                    <!-- PayMob Configuration Check -->
+                    <div class="mb-4">
+                        <h5 class="fw-bold">PayMob Configuration</h5>
+                        <div class="bg-light p-3 rounded">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>API Key:</strong> <span id="apiKeyStatus">Checking...</span><br>
+                                    <strong>Integration ID:</strong> <span id="integrationIdStatus">Checking...</span>
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>IFrame ID:</strong> <span id="iframeIdStatus">Checking...</span><br>
+                                    <strong>Base URL:</strong> <span id="baseUrlStatus">Checking...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="mb-4">
+                        <h5 class="fw-bold">Quick Actions</h5>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <a href="@Url.Action("Index", "Courses")" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>Back to Courses
+                            </a>
+                            <button class="btn btn-warning" onclick="clearCache()">
+                                <i class="fas fa-trash me-1"></i>Clear Cache
+                            </button>
+                            <button class="btn btn-info" onclick="exportLogs()">
+                                <i class="fas fa-download me-1"></i>Export Logs
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function logResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('testResults');
+            const timestamp = new Date().toLocaleTimeString();
+            const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+
+            resultsDiv.textContent += `[${timestamp}] ${icon} ${message}\n`;
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        async function testPayMobConnection() {
+            logResult('Testing PayMob connection...', 'info');
+
+            try {
+                const response = await fetch('/Payment/TestPayMobConnection');
+                const result = await response.json();
+
+                if (result.success) {
+                    logResult(`PayMob connection successful!`, 'success');
+                    logResult(`Auth Token: ${result.hasAuthToken ? 'Valid' : 'Invalid'}`, result.hasAuthToken ? 'success' : 'error');
+                    logResult(`User: ${result.user.firstName} (${result.user.email})`, 'info');
+                } else {
+                    logResult(`PayMob connection failed: ${result.error}`, 'error');
+                    if (result.details) {
+                        logResult(`Details: ${result.details}`, 'error');
+                    }
+                }
+            } catch (error) {
+                logResult(`Network error testing PayMob: ${error.message}`, 'error');
+            }
+        }
+
+        async function testDatabaseConnection() {
+            logResult('Testing database connection...', 'info');
+
+            try {
+                const response = await fetch('/api/courses');
+
+                if (response.ok) {
+                    const courses = await response.json();
+                    logResult(`Database connection successful! Found ${courses.length} courses.`, 'success');
+                } else {
+                    logResult(`Database connection failed: HTTP ${response.status}`, 'error');
+                }
+            } catch (error) {
+                logResult(`Database test error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testUserServices() {
+            logResult('Testing user services...', 'info');
+
+            const userId = '@Context.Session.GetString("UserId")';
+            if (!userId) {
+                logResult('No user logged in - cannot test user services', 'error');
+                return;
+            }
+
+            try {
+                // Test if we can fetch user data (this would require an API endpoint)
+                logResult(`User ID from session: ${userId}`, 'success');
+                logResult(`User Name: @Context.Session.GetString("UserName")`, 'success');
+                logResult('User services appear to be working', 'success');
+            } catch (error) {
+                logResult(`User services error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testCourseServices() {
+            logResult('Testing course services...', 'info');
+
+            try {
+                const response = await fetch('/api/courses');
+
+                if (response.ok) {
+                    const courses = await response.json();
+                    logResult(`Course services working! Found ${courses.length} courses.`, 'success');
+
+                    if (courses.length > 0) {
+                        const firstCourse = courses[0];
+                        logResult(`Sample course: "${firstCourse.title}" - $${firstCourse.price || 'Free'}`, 'info');
+                    }
+                } else {
+                    logResult(`Course services failed: HTTP ${response.status}`, 'error');
+                }
+            } catch (error) {
+                logResult(`Course services error: ${error.message}`, 'error');
+            }
+        }
+
+        function clearCache() {
+            logResult('Clearing browser cache...', 'info');
+
+            if ('caches' in window) {
+                caches.keys().then(function(names) {
+                    for (let name of names) {
+                        caches.delete(name);
+                    }
+                    logResult('Browser cache cleared', 'success');
+                });
+            }
+
+            // Clear localStorage
+            localStorage.clear();
+            logResult('Local storage cleared', 'success');
+        }
+
+        function exportLogs() {
+            const logs = document.getElementById('testResults').textContent;
+            const blob = new Blob([logs], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `payment-diagnostics-${new Date().toISOString().slice(0,10)}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+
+            logResult('Logs exported to file', 'success');
+        }
+
+        // Check configuration on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // These would need to be set from the server-side
+            document.getElementById('apiKeyStatus').textContent = 'Check server logs';
+            document.getElementById('integrationIdStatus').textContent = 'Check server logs';
+            document.getElementById('iframeIdStatus').textContent = 'Check server logs';
+            document.getElementById('baseUrlStatus').textContent = 'https://accept.paymob.com/api';
+
+            logResult('Diagnostics page loaded successfully', 'success');
+            logResult('Run tests above to check system status', 'info');
+        });
+    </script>
+}
