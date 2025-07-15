@@ -1,5 +1,4 @@
-﻿// LMS.Application/Services/MockPayMobService.cs - خدمة وهمية للاختبار
-using LMS.Core.Interfaces.Services;
+﻿using LMS.Core.Interfaces.Services;
 using LMS.Core.Models;
 using LMS.Core.Models.PayMob;
 using Microsoft.Extensions.Logging;
@@ -10,6 +9,7 @@ namespace LMS.Application.Services
     {
         private readonly ILogger<MockPayMobService> _logger;
 
+        // Remove HttpClient from constructor - it's not needed for mock service
         public MockPayMobService(ILogger<MockPayMobService> logger)
         {
             _logger = logger;
@@ -39,7 +39,7 @@ namespace LMS.Application.Services
         {
             _logger.LogInformation("Mock PayMob: Generating fake payment URL for token {Token}", paymentToken);
 
-            // إنشاء رابط وهمي يحاكي صفحة دفع
+            // Create a mock payment URL that redirects to your MockPayment page
             var mockPaymentUrl = $"https://localhost:7095/Payment/MockPayment?token={paymentToken}";
             return Task.FromResult(mockPaymentUrl);
         }
