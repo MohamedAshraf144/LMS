@@ -29,8 +29,8 @@ namespace LMS.API.Controllers
             _logger = logger;
         }
 
+
         [HttpPost("initiate")]
-        // إزالة [Authorize] من هذا الـ endpoint أيضاً
         public async Task<IActionResult> InitiatePayment([FromBody] CreatePaymentDtoWithUser dto)
         {
             try
@@ -38,9 +38,7 @@ namespace LMS.API.Controllers
                 if (!ModelState.IsValid)
                     return BadRequest(ModelState);
 
-                // بدلاً من أخذ UserId من Token، سنأخذه من الـ request body
                 var userId = dto.UserId;
-
                 _logger.LogInformation("Initiating payment for user {UserId}, course {CourseId}", userId, dto.CourseId);
 
                 // Get course details
@@ -51,8 +49,13 @@ namespace LMS.API.Controllers
                 if (course.Price == null || course.Price <= 0)
                     return BadRequest("Course is free or price not set");
 
-                // Create payment record
-                var payment = await _paymentService.CreatePaymentAsync(userId, dto.CourseId, course.Price.Value);
+                // تحويل من USD إلى EGP قبل حفظ payment
+                var priceEGP = course.Price.Value * 30; // تحديث السعر حسب السوق
+
+                _logger.LogInformation("Course price: ${Price} USD = {PriceEGP} EGP", course.Price.Value, priceEGP);
+
+                // Create payment record بالسعر المحول
+                var payment = await _paymentService.CreatePaymentAsync(userId, dto.CourseId, priceEGP);
 
                 // Initiate PayMob payment
                 var paymentUrl = await _paymentService.InitiatePaymentAsync(payment.Id);
@@ -69,7 +72,11 @@ namespace LMS.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error initiating payment for course {CourseId}", dto.CourseId);
-                return StatusCode(500, new { Message = "An error occurred while initiating payment", Error = ex.Message });
+                return StatusCode(500, new
+                {
+                    Message = "An error occurred while initiating payment",
+                    Error = ex.Message
+                });
             }
         }
 
