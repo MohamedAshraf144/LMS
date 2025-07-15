@@ -21,11 +21,11 @@ namespace LMS.Shared.Extensions
             services.AddScoped<IAssignmentService, AssignmentService>();
             services.AddScoped<IPaymentService, PaymentService>();
 
-            // Register MockPayMobService without HttpClient
-            services.AddScoped<IPayMobService, MockPayMobService>();
+            // Real PayMob Service with HttpClient
+            services.AddHttpClient<IPayMobService, PayMobService>();
 
-            // If you want to use the real PayMob service with HttpClient, use this instead:
-            // services.AddHttpClient<IPayMobService, PayMobService>();
+            // If you want to use MockPayMobService for testing, uncomment this instead:
+            // services.AddScoped<IPayMobService, MockPayMobService>();
 
             return services;
         }
