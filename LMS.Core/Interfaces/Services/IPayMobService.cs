@@ -1,10 +1,5 @@
 ﻿using LMS.Core.Models;
 using LMS.Core.Models.PayMob;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LMS.Core.Interfaces.Services
 {
@@ -16,5 +11,6 @@ namespace LMS.Core.Interfaces.Services
         Task<string> GetPaymentUrlAsync(string paymentToken);
         Task<bool> VerifyWebhookAsync(string payload, string signature);
         Task<PaymentTransaction?> ProcessWebhookAsync(string payload);
+        Task<string> StartPaymentAsync(User user, Course course);
     }
 }

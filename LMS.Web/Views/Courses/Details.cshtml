@@ -163,9 +163,9 @@
                         }
                     </div>
 
-                    @if (Context.Session.GetString("UserId") != null)
+                    @if (Context.Session.GetString("UserId") != null && !(ViewBag.IsEnrolled ?? false))
                     {
-                        @if (Model.Price.HasValue && Model.Price > 0)
+                        if (Model.Price.HasValue && Model.Price > 0)
                         {
                             <a href="@Url.Action("PayForCourse", "Payment", new { courseId = Model.Id })"
                                class="btn-primary-custom w-100 mb-3">
@@ -181,6 +181,18 @@
                                 </button>
                             </form>
                         }
+                    }
+                    else if (ViewBag.IsEnrolled ?? false)
+                    {
+                        <div class="alert alert-success text-center mb-3">
+                            <i class="fas fa-check-circle me-2"></i>
+                            You are already enrolled in this course!
+                            <div class="mt-3">
+                                <a href="@Url.Action("Index", "Lessons", new { courseId = Model.Id })" class="btn btn-success">
+                                    <i class="fas fa-play-circle me-1"></i>Go to Course Content
+                                </a>
+                            </div>
+                        </div>
                     }
                     else
                     {

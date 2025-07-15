@@ -57,6 +57,7 @@ namespace LMS.Application.Services
             }
         }
 
+
         public async Task<string> InitiatePaymentAsync(int paymentId)
         {
             try
@@ -73,13 +74,16 @@ namespace LMS.Application.Services
                 if (course == null)
                     throw new InvalidOperationException("Course not found");
 
+                _logger.LogInformation("Initiating PayMob payment for PaymentId: {PaymentId}, Amount: {Amount}",
+                    paymentId, payment.Amount);
+
                 // Get PayMob auth token
                 var authToken = await _payMobService.GetAuthTokenAsync();
 
-                // Create order
+                // Create order (استخدام payment.Amount مباشرة لأنه متحفوظ بـ EGP)
                 var orderId = await _payMobService.CreateOrderAsync(
                     authToken,
-                    payment.Amount,
+                    payment.Amount / 30, // تحويل من EGP للـ PayMob Service
                     $"Course: {course.Title}",
                     payment.Id.ToString()
                 );
@@ -88,11 +92,11 @@ namespace LMS.Application.Services
                 var paymentToken = await _payMobService.GetPaymentTokenAsync(
                     authToken,
                     orderId,
-                    payment.Amount,
+                    payment.Amount / 30, // تحويل من EGP
                     user
                 );
 
-                // Update payment with PayMob details
+                // Update payment record مع PayMob details (استخدام الـ fields الموجودة)
                 payment.PayMobOrderId = orderId.ToString();
                 payment.PaymentToken = paymentToken;
                 payment.Status = PaymentStatus.Processing;
@@ -101,7 +105,7 @@ namespace LMS.Application.Services
                 // Get payment URL
                 var paymentUrl = await _payMobService.GetPaymentUrlAsync(paymentToken);
 
-                _logger.LogInformation("Payment initiated for PaymentId: {PaymentId}, OrderId: {OrderId}",
+                _logger.LogInformation("Payment initiated successfully: PaymentId={PaymentId}, OrderId={OrderId}",
                     paymentId, orderId);
 
                 return paymentUrl;

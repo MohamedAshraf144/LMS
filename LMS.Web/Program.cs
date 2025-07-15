@@ -60,7 +60,8 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
     options.Cookie.Name = "LMS.Session";
-    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.Cookie.SameSite = SameSiteMode.None; // مهم جداً مع HTTPS
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // مهم جداً مع HTTPS
 });
 
 // Add HTTP Client for external API calls

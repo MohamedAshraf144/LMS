@@ -88,6 +88,16 @@ namespace LMS.Web.Controllers
                     return RedirectToAction(nameof(Index));
                 }
 
+                bool isEnrolled = false;
+                var userIdString = HttpContext.Session.GetString("UserId");
+                if (!string.IsNullOrEmpty(userIdString))
+                {
+                    var userId = int.Parse(userIdString);
+                    var enrollments = await _enrollmentService.GetUserEnrollmentsAsync(userId);
+                    isEnrolled = enrollments.Any(e => e.CourseId == id);
+                }
+                ViewBag.IsEnrolled = isEnrolled;
+
                 return View(course);
             }
             catch (Exception ex)
