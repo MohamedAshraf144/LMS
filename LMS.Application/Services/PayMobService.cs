@@ -1,5 +1,5 @@
 ﻿// ================================================================================================
-// Enhanced PayMobService.cs for Real Integration
+// Enhanced PayMobService.cs for Real Integration - FIXED VERSION
 // File: LMS.Application/Services/PayMobService.cs
 // ================================================================================================
 
@@ -61,6 +61,70 @@ namespace LMS.Application.Services
             _httpClient.Timeout = TimeSpan.FromSeconds(30);
         }
 
+        public async Task<string> StartPaymentAsync(User user, Course course)
+        {
+            try
+            {
+                _logger.LogInformation("🚀 Starting PayMob payment flow for user {UserId} and course {CourseId}",
+                    user.Id, course.Id);
+
+                if (course.Price == null || course.Price <= 0)
+                {
+                    throw new InvalidOperationException("Course is free or has no price set");
+                }
+
+                // Generate unique merchant order ID
+                var merchantOrderId = $"LMS_COURSE_{course.Id}_USER_{user.Id}_{DateTime.UtcNow:yyyyMMddHHmmss}";
+
+                // Convert USD to EGP (assuming course.Price is in USD)
+                var priceUSD = course.Price.Value;
+                var priceEGP = priceUSD * 30; // 1 USD = 30 EGP (update this rate as needed)
+                var amountCents = (int)(priceEGP * 100); // Convert to cents
+
+                _logger.LogInformation("💰 Payment details: ${PriceUSD} USD = {PriceEGP} EGP = {AmountCents} cents",
+                    priceUSD, priceEGP, amountCents);
+
+                // Step 1: Get Authentication Token
+                _logger.LogInformation("🔐 Step 1: Getting authentication token...");
+                var authToken = await GetAuthTokenAsync();
+                if (string.IsNullOrEmpty(authToken))
+                {
+                    throw new InvalidOperationException("Failed to get PayMob authentication token");
+                }
+                _logger.LogInformation("✅ Auth token received: {TokenLength} characters", authToken.Length);
+
+                // Step 2: Create Order
+                _logger.LogInformation("📦 Step 2: Creating PayMob order...");
+                var orderId = await CreateOrderAsync(authToken, course.Price.Value, $"Course: {course.Title}", merchantOrderId);
+                if (orderId <= 0)
+                {
+                    throw new InvalidOperationException("Failed to create PayMob order");
+                }
+                _logger.LogInformation("✅ Order created with ID: {OrderId}", orderId);
+
+                // Step 3: Get Payment Key
+                _logger.LogInformation("🔑 Step 3: Getting payment key...");
+                var paymentKey = await GetPaymentTokenAsync(authToken, orderId, course.Price.Value, user);
+                if (string.IsNullOrEmpty(paymentKey))
+                {
+                    throw new InvalidOperationException("Failed to get PayMob payment key");
+                }
+                _logger.LogInformation("✅ Payment key received: {KeyLength} characters", paymentKey.Length);
+
+                // Step 4: Generate iframe URL
+                var iframeUrl = await GetPaymentUrlAsync(paymentKey);
+                _logger.LogInformation("🌐 Payment URL generated: {PaymentUrl}", iframeUrl);
+
+                return iframeUrl;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "💥 Error in StartPaymentAsync for user {UserId} and course {CourseId}",
+                    user.Id, course.Id);
+                throw;
+            }
+        }
+
         public async Task<string> GetAuthTokenAsync()
         {
             try
@@ -90,7 +154,7 @@ namespace LMS.Application.Services
         {
             try
             {
-                // تحويل من USD إلى EGP (1 USD = 30 EGP تقريباً)
+                // Convert from USD to EGP (1 USD = 30 EGP approximately)
                 var amountEGP = amount * 30;
                 var amountCents = (int)(amountEGP * 100);
 
@@ -118,7 +182,7 @@ namespace LMS.Application.Services
 
                 var response = await PostAsync<OrderResponse>("/ecommerce/orders", request);
 
-                if (response?.id == 0)
+                if (response?.id == 0 || response?.id == null)
                 {
                     _logger.LogError("PayMob order response missing ID");
                     throw new InvalidOperationException("Failed to create order - missing order ID");
@@ -166,7 +230,7 @@ namespace LMS.Application.Services
                         state = "NA"
                     },
                     currency = "EGP",
-                    integration_id = _config.IntegrationId,
+                    integration_id = int.Parse(_config.IntegrationId),
                     lock_order_when_paid = true
                 };
 
@@ -199,54 +263,6 @@ namespace LMS.Application.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error generating PayMob payment URL");
-                throw;
-            }
-        }
-
-        public async Task<string> StartPaymentAsync(User user, Course course)
-        {
-            try
-            {
-                _logger.LogInformation("Starting payment for user {UserId} and course {CourseId}", user.Id, course.Id);
-
-                if (course.Price == null || course.Price <= 0)
-                {
-                    throw new InvalidOperationException("Course is free or has no price set");
-                }
-
-                // Generate unique merchant order ID
-                var merchantOrderId = $"LMS_COURSE_{course.Id}_USER_{user.Id}_{DateTime.UtcNow:yyyyMMddHHmmss}";
-
-                // Step 1: Get auth token
-                var authToken = await GetAuthTokenAsync();
-
-                // Step 2: Create order
-                var orderId = await CreateOrderAsync(
-                    authToken,
-                    course.Price.Value,
-                    $"Course: {course.Title}",
-                    merchantOrderId
-                );
-
-                // Step 3: Get payment token
-                var paymentToken = await GetPaymentTokenAsync(
-                    authToken,
-                    orderId,
-                    course.Price.Value,
-                    user
-                );
-
-                // Step 4: Generate payment URL
-                var paymentUrl = await GetPaymentUrlAsync(paymentToken);
-
-                _logger.LogInformation("Payment started successfully - User: {UserId}, Course: {CourseId}, Order: {OrderId}",
-                    user.Id, course.Id, orderId);
-
-                return paymentUrl;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error starting payment for user {UserId} and course {CourseId}", user.Id, course.Id);
                 throw;
             }
         }

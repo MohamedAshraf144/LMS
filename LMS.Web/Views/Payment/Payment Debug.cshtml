@@ -1,13 +1,12 @@
 ﻿@{
     ViewData["Title"] = "Payment Debug";
-    var debugInfo = ViewBag.DebugInfo;
-    var session = Context.Session;
-
+    var course = ViewBag.Course as LMS.Core.Models.Course;
+    var paymentUrl = ViewBag.PaymentUrl as string;
 }
 
 <div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-lg-10">
+        <div class="col-lg-8">
             <div class="card shadow">
                 <div class="card-header bg-warning text-dark">
                     <h4 class="mb-0">
@@ -17,318 +16,104 @@
                 </div>
                 <div class="card-body">
                     
-                    <!-- Session Info -->
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <h5 class="text-primary">Session Information</h5>
+                    <!-- Course Info -->
+                    @if (course != null)
+                    {
+                        <div class="mb-4">
+                            <h5 class="text-primary">Course Information</h5>
                             <table class="table table-sm">
                                 <tr>
-                                    <td><strong>Session ID:</strong></td>
-                                    <td>
-                                        <code>
-                                            @session
-                                            .Id
-                                        </code>
-                                    </td>
+                                    <td><strong>Course ID:</strong></td>
+                                    <td>@course.Id</td>
                                 </tr>
                                 <tr>
-                                    <td><strong>User ID:</strong></td>
-                                    <td><code>@Context.Session.GetString("UserId")</code></td>
+                                    <td><strong>Title:</strong></td>
+                                    <td>@course.Title</td>
                                 </tr>
                                 <tr>
-                                    <td><strong>User Name:</strong></td>
-                                    <td><code>@Context.Session.GetString("UserName")</code></td>
+                                    <td><strong>Price (USD):</strong></td>
+                                    <td>$@course.Price</td>
                                 </tr>
                                 <tr>
-                                    <td><strong>Session Available:</strong></td>
-                                    <td>
-                                        <span class="badge @(@session
-                                                                                            .IsAvailable ? "bg-success" : "bg-danger")">
-                                            @session
-                                            .IsAvailable
-                                        </span>
-                                    </td>
+                                    <td><strong>Price (EGP):</strong></td>
+                                    <td>@((course.Price ?? 0) * 30) EGP</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Amount (Cents):</strong></td>
+                                    <td>@((int)((course.Price ?? 0) * 30 * 100)) cents</td>
                                 </tr>
                             </table>
                         </div>
-                        <div class="col-md-6">
-                            <h5 class="text-primary">Environment</h5>
-                            <table class="table table-sm">
-                                <tr>
-                                    <td><strong>Server Time:</strong></td>
-                                    <td><code>@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")</code></td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Environment:</strong></td>
-                                    <td><code>@(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Unknown")</code></td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Machine Name:</strong></td>
-                                    <td><code>@Environment.MachineName</code></td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Current URL:</strong></td>
-                                    <td><code>@Context.Request.Scheme://@Context.Request.Host@Context.Request.Path</code></td>
-                                </tr>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- Quick Tests -->
-                    <div class="mb-4">
-                        <h5 class="text-primary">Quick Tests</h5>
-                        <div class="row g-2">
-                            <div class="col-md-3">
-                                <button class="btn btn-outline-primary w-100" onclick="testPayMobConnection()">
-                                    <i class="fas fa-plug me-1"></i>Test PayMob
-                                </button>
-                            </div>
-                            <div class="col-md-3">
-                                <button class="btn btn-outline-success w-100" onclick="testSession()">
-                                    <i class="fas fa-user me-1"></i>Test Session
-                                </button>
-                            </div>
-                            <div class="col-md-3">
-                                <button class="btn btn-outline-info w-100" onclick="testCourses()">
-                                    <i class="fas fa-book me-1"></i>Test Courses
-                                </button>
-                            </div>
-                            <div class="col-md-3">
-                                <button class="btn btn-outline-warning w-100" onclick="clearSession()">
-                                    <i class="fas fa-trash me-1"></i>Clear Session
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Log Console -->
-                    <div class="mb-4">
-                        <h5 class="text-primary">Test Results</h5>
-                        <div id="logConsole" class="border rounded p-3" style="height: 300px; overflow-y: auto; background: #f8f9fa; font-family: monospace; font-size: 0.9rem;">
-                            <div class="text-muted">Ready to run tests...</div>
-                        </div>
-                    </div>
-
-                    <!-- Sample Courses -->
-                    <div class="mb-4">
-                        <h5 class="text-primary">Available Courses</h5>
-                        <div id="coursesList">
-                            <div class="text-center">
-                                <div class="spinner-border text-primary me-2"></div>
-                                Loading courses...
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Actions -->
-                    <div class="d-flex gap-2 flex-wrap">
-                        <a href="@Url.Action("Index", "Courses")" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left me-1"></i>Back to Courses
-                        </a>
-                        <a href="@Url.Action("Index", "Home")" class="btn btn-primary">
-                            <i class="fas fa-home me-1"></i>Home
-                        </a>
-                        <button class="btn btn-info" onclick="exportDebugInfo()">
-                            <i class="fas fa-download me-1"></i>Export Debug Info
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-@section Scripts {
-    <script>
-        let logConsole;
-
-        document.addEventListener('DOMContentLoaded', function() {
-            logConsole = document.getElementById('logConsole');
-            log('🚀 Debug page loaded', 'success');
-            
-            // Load courses on page load
-            loadCourses();
-        });
-
-        function log(message, type = 'info') {
-            const timestamp = new Date().toLocaleTimeString();
-            const icons = {
-                'success': '✅',
-                'error': '❌',
-                'warning': '⚠️',
-                'info': 'ℹ️'
-            };
-            
-            const colors = {
-                'success': 'text-success',
-                'error': 'text-danger', 
-                'warning': 'text-warning',
-                'info': 'text-primary'
-            };
-
-            const icon = icons[type] || 'ℹ️';
-            const color = colors[type] || 'text-dark';
-            
-            const logEntry = document.createElement('div');
-            logEntry.className = color;
-            logEntry.innerHTML = `[${timestamp}] ${icon} ${message}`;
-            
-            logConsole.appendChild(logEntry);
-            logConsole.scrollTop = logConsole.scrollHeight;
-        }
-
-        async function testPayMobConnection() {
-            log('🔍 Testing PayMob connection...', 'info');
-            
-            try {
-                const response = await fetch('/Payment/TestPayMobConnection');
-                const result = await response.json();
-                
-                if (result.success) {
-                    log(`✅ PayMob connection successful!`, 'success');
-                    log(`📝 Auth Token: ${result.hasAuthToken ? 'Valid' : 'Invalid'} (${result.tokenLength} chars)`, result.hasAuthToken ? 'success' : 'error');
-                    log(`👤 User: ${result.user.firstName} (${result.user.email})`, 'info');
-                } else {
-                    log(`❌ PayMob failed: ${result.error}`, 'error');
-                    if (result.details) {
-                        log(`📋 Details: ${result.details}`, 'error');
                     }
-                }
-            } catch (error) {
-                log(`💥 Network error: ${error.message}`, 'error');
-            }
-        }
 
-        function testSession() {
-            log('🔍 Testing session data...', 'info');
-            
-            const userId = '@Context.Session.GetString("UserId")';
-            const userName = '@Context.Session.GetString("UserName")';
-                    const sessionId = '@session
-        .Id';
-            
-            if (userId) {
-                log(`✅ User ID: ${userId}`, 'success');
-                log(`✅ User Name: ${userName}`, 'success');
-                log(`✅ Session ID: ${sessionId}`, 'success');
-            } else {
-                log(`❌ No user session found`, 'error');
-                log(`💡 Try logging in first`, 'warning');
-            }
-        }
-
-        async function loadCourses() {
-            try {
-                log('📚 Loading courses...', 'info');
-                const response = await fetch('/api/courses');
-                
-                if (response.ok) {
-                    const courses = await response.json();
-                    displayCourses(courses);
-                    log(`✅ Loaded ${courses.length} courses`, 'success');
-                } else {
-                    log(`❌ Failed to load courses: HTTP ${response.status}`, 'error');
-                    document.getElementById('coursesList').innerHTML = '<div class="alert alert-danger">Failed to load courses</div>';
-                }
-            } catch (error) {
-                log(`💥 Error loading courses: ${error.message}`, 'error');
-                document.getElementById('coursesList').innerHTML = '<div class="alert alert-danger">Error loading courses</div>';
-            }
-        }
-
-        function displayCourses(courses) {
-            const container = document.getElementById('coursesList');
-            
-            if (courses.length === 0) {
-                container.innerHTML = '<div class="alert alert-warning">No courses found</div>';
-                return;
-            }
-
-            const coursesHtml = courses.slice(0, 3).map(course => `
-                <div class="card mb-2">
-                    <div class="card-body py-2">
-                        <div class="row align-items-center">
-                            <div class="col-md-8">
-                                <h6 class="mb-1">${course.title}</h6>
-                                <small class="text-muted">ID: ${course.id} | Price: $${course.price || 'Free'}</small>
+                    <!-- PayMob URL -->
+                    @if (!string.IsNullOrEmpty(paymentUrl))
+                    {
+                        <div class="mb-4">
+                            <h5 class="text-success">Generated PayMob URL</h5>
+                            <div class="alert alert-info">
+                                <strong>URL:</strong><br>
+                                <code class="user-select-all">@paymentUrl</code>
                             </div>
-                            <div class="col-md-4 text-end">
-                                <button class="btn btn-sm btn-outline-primary" onclick="testPayment(${course.id})">
-                                    <i class="fas fa-credit-card me-1"></i>Test Payment
+                            
+                            <!-- URL Analysis -->
+                            <div class="mt-3">
+                                <h6>URL Analysis:</h6>
+                                @{
+                                    var uri = new Uri(paymentUrl);
+                                    var queryParams = System.Web.HttpUtility.ParseQueryString(uri.Query);
+                                }
+                                <ul>
+                                    <li><strong>Base URL:</strong> @(uri.Scheme)://@(uri.Host)@(uri.AbsolutePath)</li>
+                                    <li><strong>Payment Token:</strong> @queryParams["payment_token"]</li>
+                                    <li><strong>Token Length:</strong> @(queryParams["payment_token"]?.Length ?? 0) characters</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Test Options -->
+                        <div class="mb-4">
+                            <h5 class="text-primary">Test Options</h5>
+                            <div class="d-grid gap-2">
+                                <a href="@paymentUrl" target="_blank" class="btn btn-success btn-lg">
+                                    <i class="fas fa-external-link-alt me-2"></i>
+                                    Open PayMob Page in New Tab
+                                </a>
+                                <button class="btn btn-primary" onclick="redirectToPayMob()">
+                                    <i class="fas fa-arrow-right me-2"></i>
+                                    Redirect to PayMob (Same Tab)
+                                </button>
+                                <button class="btn btn-info" onclick="copyUrl()">
+                                    <i class="fas fa-copy me-2"></i>
+                                    Copy URL to Clipboard
+                                </button>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Error:</strong> No PayMob URL was generated!
+                        </div>
+                    }
+
+                    <!-- Debug Actions -->
+                    <div class="mb-4">
+                        <h5 class="text-primary">Debug Actions</h5>
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <button class="btn btn-outline-primary w-100" onclick="testPayMobConnection()">
+                                    <i class="fas fa-plug me-2"></i>Test PayMob Connection
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <button class="btn btn-outline-secondary w-100" onclick="checkConfiguration()">
+                                    <i class="fas fa-cog me-2"></i>Check Configuration
                                 </button>
                             </div>
                         </div>
                     </div>
-                </div>
-            `).join('');
 
-            container.innerHTML = coursesHtml;
-        }
-
-        async function testCourses() {
-            await loadCourses();
-        }
-
-        function testPayment(courseId) {
-            log(`💳 Testing payment for course ID: ${courseId}`, 'info');
-            
-            const userId = '@Context.Session.GetString("UserId")';
-            if (!userId) {
-                log(`❌ No user logged in - cannot test payment`, 'error');
-                return;
-            }
-
-            // Redirect to payment page
-            log(`🔄 Redirecting to payment page...`, 'info');
-            window.location.href = `/Payment/PayForCourse/${courseId}`;
-        }
-
-        function clearSession() {
-            log('🧹 Clearing session...', 'warning');
-            
-            fetch('/Account/Logout', { method: 'POST' })
-                .then(() => {
-                    log('✅ Session cleared', 'success');
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 1000);
-                })
-                .catch(error => {
-                    log(`❌ Error clearing session: ${error.message}`, 'error');
-                });
-        }
-
-        function exportDebugInfo() {
-            const debugData = {
-                timestamp: new Date().toISOString(),
-                session: {
-                    userId: '@Context.Session.GetString("UserId")',
-                    userName: '@Context.Session.GetString("UserName")',
-                            sessionId: '@session
-        .Id',
-                            isAvailable: @session
-        .IsAvailable.ToString().ToLower()
-                },
-                environment: {
-                    serverTime: '@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")',
-                    environment: '@(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Unknown")',
-                    machineName: '@Environment.MachineName',
-                    currentUrl: '@Context.Request.Scheme://@Context.Request.Host@Context.Request.Path'
-                },
-                logs: logConsole.innerText
-            };
-
-            const blob = new Blob([JSON.stringify(debugData, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `payment-debug-${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            log('📥 Debug info exported', 'success');
-        }
-    </script>
-}
+                    <!-- Test Results -->
+                    <div class="mb-4
